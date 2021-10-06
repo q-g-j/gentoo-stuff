@@ -1,0 +1,34 @@
+#!/bin/bash
+
+usage() {
+cat <<EOF
+jail-run
+--------
+
+Shortcut to firejail to bind a program to a given network with a fixed IP.
+Waits for internet access to be available before launching the program.
+Useful for LAN games between host and a VM guest.
+
+Needs firejail installed!
+
+Usage:
+        jail-run <device name> <ip address for the jail> <command>
+	jail-run --help | -h
+
+
+Example:
+        jail-run bridge0 192.168.100.230 minecraft
+	(This assumes that bridge0 uses subnet 192.168.100.0/24 and the given IP is not in use)
+EOF
+}
+
+
+if [[ "$@" == "" || "$1" == "--help" || "$1" == "-h" ]]; then
+	usage
+	exit 1
+fi
+
+export ARGS="$(echo "$@" | sed "s/$1//" | sed "s/$2//")"
+export LC_ALL=C
+
+firejail --noprofile --net=$1 --ip=$2 bash -c 'while [ "$(ping -c1 -W1 1.1.1.1 | grep time=)" == "" ]; do sleep 0.1; done; $(echo $ARGS)'

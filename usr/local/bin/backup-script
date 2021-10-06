@@ -1,0 +1,762 @@
+#!/bin/bash
+
+usage() {
+cat <<EOF
+-------------------
+Backup shell script
+-------------------
+
+Backup methods:
+
+    tar, tar.gz, tar.bz2, tar.xz, tar.zst, rsync, rsync with hardlinks:
+    -------------------------------------------------------------------
+
+        For single or multiple folder backups (also suitable for full system backups)
+          Features:
+            - preserve full permissions / ownerships / xattrs
+            - tar and rsync: --one-file-system enabled (to not backup mounted folders.
+              To include mounted folders, explicitly add them to SOURCES)
+            - exclude files / folders
+            - optional encryption with gpg (only for the tar commands)
+            - keep only the desired number of backups
+            - rsync-hardlinks: creates a hardlink instead of copying, if a file
+              has not changed since the last backup. Can save a lot of disk space.
+              (Only makes sense if KEEP_BACKUPS > 1)
+            - custom pre and post backup commands
+            - file logging (backup.log in destination folder)
+            - measure the time the backup took (time.log in destination folder)
+
+    qemu-img:
+    ---------
+
+        For backing up and shrinking qemu disks (raw or qcow2) to qcow2 format.
+          Features:
+            - keep only the desired number of backups
+            - custom pre and post backup commands
+            - measure the time the backup took (time.log in destination folder)
+
+
+Needs the following settings files:
+    /etc/backup-script/backup-script.conf             <-- general settings
+    /etc/backup-script/profiles/01-profilename.bsc    <-- one or more profiles with suffix ".bsc"
+    /etc/backup-script/profiles/02-profilename.bsc    <-- one or more profiles with suffix ".bsc"
+
+
+usage:
+        backup-script                    execute all backup profiles with suffix ".bsc"
+                                         in /etc/backup-script/profiles
+
+        backup-script   -h|--help        this message
+        backup-script   -e|--example     create sample settings files in /etc/backup-script
+                                         (remove "_example" from the filenames)
+
+
+To extract / decrypt:
+    - tar commands (example for zstd):
+        tar xp -I zstd --xattrs-include='*.*' --numeric-owner --same-owner -f "backup.tar.zst"
+    - tar commands (example for bzip2):
+        tar xjp --xattrs-include='*.*' --numeric-owner --same-owner -f "backup.tar.bz2"
+    - tar commands with encryption (example for zst):
+        gpg -d "backup.tar.zst.gpg" | tar xp -I zstd --xattrs-include='*.*' --numeric-owner --same-owner -f -
+    - tar commands with encryption (example for bzip2):
+        gpg -d "backup.tar.bz2.gpg" | tar xjp --xattrs-include='*.*' --numeric-owner --same-owner -f -
+    - tar commands - multiple archives at once (example for zstd):
+        for i in *.zst; do sudo tar xpf "\$i" -I zstd --xattrs-include='*.*' --numeric-owner --same-owner; done
+    - tar commands with encryption - multiple archives at once (example for zstd):
+        for i in *.zst.gpg; do gpg -d "\$i" | tar xp -I zstd --xattrs-include='*.*' --numeric-owner --same-owner -f -; done
+EOF
+}
+
+create_example_settings() {
+echo "Creating sample settings files in \"/etc/backup-script\":"
+echo "    /etc/backup-script/backup-script.conf_example"
+echo "    /etc/backup-script/profiles/01-system.bsc_example"
+echo "    /etc/backup-script/profiles/02-encrypted.bsc_example"
+echo "    /etc/backup-script/profiles/03-vms.bsc_example"
+echo
+echo "Remove the trailing \"_example\" from the filenames."
+mkdir -p /etc/backup-script/profiles
+
+# general settings example:
+cat <<EOF >/etc/backup-script/backup-script.conf_example
+# Set the locale for this script:
+# (type locale -a in a shell for available locales)
+LANG="de_DE.UTF-8"
+
+# Shutdown the PC after the last backup has finished
+SHUTDOWN=0
+EOF
+
+# unencrypted files / folders example:
+cat <<EOF >/etc/backup-script/profiles/01-system.bsc_example
+# Activate this backup profile? ("1" or "0")
+ENABLE_BACKUP=1
+
+# Destination folder
+# Example:
+#   DESTINATION="/backup/system"
+DESTINATION="/mnt/usb/backup/system"
+
+# A list of files or folders to create a backup from - seperated by a new-line (Enter).
+# Just use "/" to backup the whole system! In case of the "tar" cmds, this results in one
+# big file named "sysroot.tar.[xyz]"
+# Alternately use "/*". This results in multiple archives like:
+# sysroot-bin.tar.[xyz], sysroot-usr.tar.[xyz], sysroot-var.tar.[xyz], ...
+# Example:
+#	SOURCES="
+#	/etc
+#	/home/*
+#	/var/lib/libvirt/images/*.qcow2
+#	"
+SOURCES="
+/
+"
+
+# Files and folders to exclude from the backup - seperated by a new-line (Enter) like above:
+# (needs a leading "/")
+EXCLUDES="
+/home/*
+/home/.*
+/lost+found
+/root/*
+/root/.*
+/tmp/*
+/tmp/.*
+/var/lib/libvirt/images/*.qcow2
+/var/lib/libvirt/images/*.raw
+/var/swapfile
+/var/tmp/portage/*
+/var/tmp/portage/.*
+/var/tmp/notmpfs/*
+/var/tmp/notmpfs/.*
+"
+
+# Command to use for the backup:
+# tar, targz, tarbz2, tarxz, tarzstd, rsync, rsync-hardlinks or qemu-img (for backing up and shrinking qcow2 images)
+COMMAND="tarzstd"
+
+# Encrypt the backup? Only for tar, targz, tarbz2, tarxz and tarzstd!
+# tar[xy] will be piped to gpg.
+ENCRYPT=0
+
+# Encryption password:
+# For safety store the password in an extra file.
+# Example:
+#	PASSWORD=\$(cat /etc/backup-script/password)
+PASSWORD=""
+
+# Command to be executed BEFORE starting the backup (e.g. mount an USB drive):
+PRE_COMMAND=""
+
+# Command to be executed AFTER finishing the backup:
+POST_COMMAND=""
+
+# How many backups to keep?
+KEEP_BACKUPS=3
+
+# Enable logging (the file might become several MB large):
+LOG_FILE=1
+
+# CAUTION:
+# Setting this to 1 deletes the whole destination folder - including all backups.
+DELETEMODE=0
+
+# The date format for the destination sub-folder. Default is YYYY-MM-DD, Which will allow one backup per day.
+# Backups with the same date/time will be deleted. To allow more backups per day, you may add
+# hours/minutes/seconds to the destination folder like this: DATE_FORMAT=\$(date +%Y-%m-%d__%Hh%Mm%Ss)
+# NOTE: for the variable KEEP_BACKUPS to work the format MUST be in this order: 
+# left to right - longest time unit to shortest time unit, so it ends up like this: 2021-12-31__23-59
+DATE_FORMAT=\$(date +%Y-%m-%d)
+
+# Print the complete command for each entry in SOURCES if set to 1:
+DEBUG=0
+EOF
+# encrypted files / folders example:
+cat <<EOF >/etc/backup-script/profiles/02-encrypted.bsc_example
+# Activate this backup profile? ("1" or "0")
+ENABLE_BACKUP=1
+
+# Destination folder
+# Example:
+#   DESTINATION="/backup/system"
+DESTINATION="/mnt/usb/backup/encrypted"
+
+# A list of files or folders to create a backup from - seperated by a new-line (Enter).
+# Just use "/" to backup the whole system! In case of the "tar" cmds, this results in one
+# big file named "sysroot.tar.[xyz]"
+# Alternately use "/*". This results in multiple archives like:
+# sysroot-bin.tar.[xyz], sysroot-usr.tar.[xyz], sysroot-var.tar.[xyz], ...
+# Example:
+#	SOURCES="
+#	/etc
+#	/home/*
+#	/var/lib/libvirt/images/*.qcow2
+#	"
+SOURCES="
+/home/*
+"
+
+# Files and folders to exclude from the backup - seperated by a new-line (Enter) like above:
+# (needs a leading "/")
+EXCLUDES="
+/home/username/Downloads
+"
+
+# Command to use for the backup:
+# tar, targz, tarbz2, tarxz, tarzstd, rsync, rsync-hardlinks or qemu-img (for backing up and shrinking qcow2 images)
+COMMAND="tarzstd"
+
+# Encrypt the backup? Only for tar, targz, tarbz2, tarxz and tarzstd!
+# tar[xy] will be piped to gpg.
+ENCRYPT=1
+
+# Encryption password:
+# For safety store the password in an extra file.
+# Example:
+#	PASSWORD=\$(cat /etc/backup-script/password)
+PASSWORD="\$(cat /etc/backup-script/password)"
+
+# Command to be executed BEFORE starting the backup (e.g. mount an USB drive):
+PRE_COMMAND=""
+
+# Command to be executed AFTER finishing the backup:
+POST_COMMAND=""
+
+# How many backups to keep?
+KEEP_BACKUPS=3
+
+# Enable logging (the file might become several MB large):
+LOG_FILE=1
+
+# CAUTION:
+# Setting this to 1 deletes the whole destination folder - including all backups.
+DELETEMODE=0
+
+# The date format for the destination sub-folder. Default is YYYY-MM-DD, Which will allow one backup per day.
+# Backups with the same date/time will be deleted. To allow more backups per day, you may add
+# hours/minutes/seconds to the destination folder like this: DATE_FORMAT=\$(date +%Y-%m-%d__%Hh%Mm%Ss)
+# NOTE: for the variable KEEP_BACKUPS to work the format MUST be in this order: 
+# left to right - longest time unit to shortest time unit, so it ends up like this: 2021-12-31__23-59
+DATE_FORMAT=\$(date +%Y-%m-%d)
+
+# Print the complete command for each entry in SOURCES if set to 1:
+DEBUG=0
+EOF
+
+# qemu vms example:
+cat <<EOF >/etc/backup-script/profiles/03-vms.bsc_example
+# Activate this backup profile? ("1" or "0")
+ENABLE_BACKUP=1
+
+# Destination folder
+# Example:
+#   DESTINATION="/backup/system"
+DESTINATION="/mnt/usb/backup/vms"
+
+# A list of files or folders to create a backup from - seperated by a new-line (Enter).
+# Just use "/" to backup the whole system! In case of the "tar" cmds, this results in one
+# big file named "sysroot.tar.[xyz]"
+# Alternately use "/*". This results in multiple archives like:
+# sysroot-bin.tar.[xyz], sysroot-usr.tar.[xyz], sysroot-var.tar.[xyz], ...
+# Example:
+#	SOURCES="
+#	/etc
+#	/home/*
+#	/var/lib/libvirt/images/*.qcow2
+#	"
+SOURCES="
+/var/lib/libvirt/images/*.qcow2
+"
+
+# Files and folders to exclude from the backup - seperated by a new-line (Enter) like above:
+# (needs a leading "/")
+EXCLUDES="
+"
+
+# Command to use for the backup:
+# tar, targz, tarbz2, tarxz, tarzstd, rsync, rsync-hardlinks or qemu-img (for backing up and shrinking qcow2 images)
+COMMAND="qemu-img"
+
+# Encrypt the backup? Only for tar, targz, tarbz2, tarxz and tarzstd!
+# tar[xy] will be piped to gpg.
+ENCRYPT=0
+
+# Encryption password:
+# For safety store the password in an extra file.
+# Example:
+#	PASSWORD=\$(cat /etc/backup-script/password)
+PASSWORD=""
+
+# Command to be executed BEFORE starting the backup (e.g. mount an USB drive):
+PRE_COMMAND="\\
+mkdir -p /mnt/usb/backup/libvirt-xmls; \\
+virsh dumpxml win10 > /mnt/usb/backup/libvirt-xmls/\`date +%Y-%m-%d\`_win10.xml; \\
+virsh dumpxml macOS-gpu > /mnt/usb/backup/libvirt-xmls/\`date +%Y-%m-%d\`_macOS-gpu.xml; \\
+virsh dumpxml macOS-spice > /mnt/usb/backup/libvirt-xmls/\`date +%Y-%m-%d\`_macOS-spice.xml; \\
+"
+
+# Command to be executed AFTER finishing the backup:
+POST_COMMAND=""
+
+# How many backups to keep?
+KEEP_BACKUPS=1
+
+# Enable logging (the file might become several MB large):
+LOG_FILE=1
+
+# CAUTION:
+# Setting this to 1 deletes the whole destination folder - including all backups.
+DELETEMODE=0
+
+# The date format for the destination sub-folder. Default is YYYY-MM-DD, Which will allow one backup per day.
+# Backups with the same date/time will be deleted. To allow more backups per day, you may add
+# hours/minutes/seconds to the destination folder like this: DATE_FORMAT=\$(date +%Y-%m-%d__%Hh%Mm%Ss)
+# NOTE: for the variable KEEP_BACKUPS to work the format MUST be in this order: 
+# left to right - longest time unit to shortest time unit, so it ends up like this: 2021-12-31__23-59
+DATE_FORMAT=\$(date +%Y-%m-%d)
+
+# Print the complete command for each entry in SOURCES if set to 1:
+DEBUG=0
+EOF
+}
+
+trap ctrl_c SIGINT SIGTERM
+
+function ctrl_c() {
+	echo
+	echo
+	echo "Script aborted!"
+	sync
+	exit 1
+}
+
+shut_down () {
+	shutdown now
+}
+
+[ "$1" != "" ] && if [ "$1" != "-h" -a "$1" != "--help" -a "$1" != "-e" -a "$1" != "--example" ]; then
+	usage
+	exit 1
+fi
+if [ "$2" != "" ]; then
+	usage
+	exit 1
+fi
+case $1 in -e|--example)
+	create_example_settings
+	exit 0
+	;;
+-h|--help)
+	usage
+	exit 0
+	;;
+esac
+
+if [ ! -d /etc/backup-script/profiles ]; then
+	usage
+	exit 1
+fi
+
+source /etc/backup-script/backup-script.conf
+if [ $? -ne 0 ]; then
+	usage
+	exit 1
+fi
+
+for profile in /etc/backup-script/profiles/*.bsc; do
+	if [ -f $profile ]; then
+		PROFILES_OK=1
+	fi
+done
+
+if [ "$PROFILES_OK" != "1" ]; then
+	usage
+	exit 1
+fi
+
+echo "#################"
+echo "# Backup-Script #"
+echo "#################"
+for profile in /etc/backup-script/profiles/*.bsc; do
+	source "$profile"
+
+	if [ $? -ne 0 ]; then
+		usage
+		exit 1
+	fi
+
+	if [ -z $DATE_FORMAT ]; then
+		DATE_FORMAT=$(date +%Y-%m-%d)
+	fi
+
+	if [ "$ENABLE_BACKUP" == "1" ]; then
+		IFS=$' '
+		for i in $(echo DESTINATION SOURCES EXCLUDES COMMAND ENCRYPT PASSWORD PRE_COMMAND POST_COMMAND KEEP_BACKUPS LOG_FILE DELETEMODE DEBUG); do
+			declare TESTVAR=$i
+			if [ -z "${!TESTVAR+x}" ]; then
+				echo
+				echo
+				echo Error! Needed variable $i is not set in $profile
+				echo Exiting...
+				exit 1
+			fi
+		done
+		unset IFS
+
+		echo
+		echo Backup started for profile \"$profile\" ... | sed 's#/etc/backup-script/profiles/##'
+
+		if [ "$DELETEMODE" == "1" ]; then
+			echo
+			echo "   "Deleting the whole destination folder:
+			echo "      ""$DESTINATION"
+			rm -rf "$DESTINATION"
+			continue
+		fi
+
+		if [ "$PRE_COMMAND" != "" ]; then
+			echo
+			echo "   ""Running PRE_COMMAND:"
+			echo "      ""$PRE_COMMAND"
+			bash -c "$PRE_COMMAND"
+		fi
+
+		echo
+		echo "   "List of existing backups:
+		COUNT=1
+		if [ -d "$DESTINATION" ]; then
+			for i in "$DESTINATION"/*; do
+				declare ND$COUNT="$i"
+				NAME="ND$COUNT"
+				if [ "`echo ${!NAME} | grep $DATE_FORMAT`" != "" ]; then
+					echo "      ""${!NAME}"\ \ \<-- current
+				elif [ "`[ "$(ls "$DESTINATION")" ] && find "$DESTINATION"/* -type d -prune | grep -v -e "$DESTINATION"\$`" != "" ]; then
+					echo "      ""${!NAME}"
+				else
+					echo "      "no backups found.
+					break
+				fi
+				((COUNT++))
+			done
+		else
+				echo "      "no backups found.
+		fi
+
+		if [ -d "$DESTINATION"/$DATE_FORMAT ]; then
+			echo
+			echo "   "Found a backup with the same date - deleting old backup:
+			DT="$DESTINATION"/$DATE_FORMAT
+			echo "      ""$DT"
+			rm -rf "$DESTINATION"/$DATE_FORMAT
+		fi
+
+		if [ -d "$DESTINATION" ]; then
+			if [ "$(ls "$DESTINATION" | wc -l)" -ge "$KEEP_BACKUPS" ]; then
+				echo
+				echo "   ""Deleting old Backups:"
+				while [ "$(ls "$DESTINATION" | wc -l)" -ge "$KEEP_BACKUPS" ]; do
+					COUNT=1
+					for i in "$DESTINATION"/*; do
+						declare ND$COUNT=$i
+						((COUNT++))
+					done
+					echo "      ""$ND1"
+					rm -rf "$ND1"
+				done
+			fi
+		fi
+
+		cd /
+
+		cmd_rsync () {
+			{ time for i in $SOURCES; do
+				if [ -f "$i" ] || [ -d "$i" ]; then
+					INEXCLUDES=0
+					for j in $EXCLUDES; do
+						if [ "$j" == "$i" ]; then
+							INEXCLUDES=1
+							break
+						fi
+					done
+					if [ "$INEXCLUDES" == "0" ]; then
+						echo "         "Copying:"  $i"
+						if [ "$i" != "/" ]; then
+							i=$(echo $i | sed 's|^/||')
+						fi
+						CMD="rsync -aAXRxcv $(for j in $EXCLUDES; do [ "$(echo $j | grep -e "/\.$")" == "" -a "$(echo $j | grep -e "/\.\.$")" == "" ] && echo -n "--exclude "\"$j\"" "; done) --delete \"$i\" \"$DESTINATION/$DATE_FORMAT\" $(if [ "$LOG_FILE" == "1" ]; then echo "1>> \"$LOGFILE\" 2>&1"; else echo ">/dev/null 2>&1"; fi)"
+						[ "$DEBUG" == "1" ] && echo "         "$CMD && bash -c "$CMD"
+						[ "$DEBUG" == "0" ] && bash -c "$CMD"
+					fi
+				fi
+			done ; } 2>> "$TIMELOGFILE"
+		}
+		cmd_rsync_hardlinks () {
+			{ time for i in $SOURCES; do
+				if [ -f "$i" ] || [ -d "$i" ]; then
+					INEXCLUDES=0
+					for j in $EXCLUDES; do
+						if [ "$j" == "$i" ]; then
+							INEXCLUDES=1
+							break
+						fi
+					done
+					if [ "$INEXCLUDES" == "0" ]; then
+						echo "         "Copying:"  $i"
+						if [ "$i" != "/" ]; then
+							i=$(echo $i | sed 's|^/||')
+						fi
+						CMD="rsync -aAXRxcv $(for j in $EXCLUDES; do [ "$(echo $j | grep -e "/\.$")" == "" -a "$(echo $j | grep -e "/\.\.$")" == "" ] && echo -n "--exclude "\"$j\"" "; done) --delete $([ "$CURRENT" != "" ] && echo --link-dest=\"$CURRENT\") \"$i\" \"$DESTINATION/$DATE_FORMAT\" $(if [ "$LOG_FILE" == "1" ]; then echo "1>> \"$LOGFILE\" 2>&1"; else echo ">/dev/null 2>&1"; fi)"
+						[ "$DEBUG" == "1" ] && echo "         "$CMD && bash -c "$CMD"
+						[ "$DEBUG" == "0" ] && bash -c "$CMD"
+					fi
+				fi
+			done ; } 2>> "$TIMELOGFILE"
+		}
+		cmd_tar () {
+			{ time for i in $SOURCES; do
+				if [ -f "$i" ] || [ -d "$i" ]; then
+					INEXCLUDES=0
+					for j in $EXCLUDES; do
+						if [ "$j" == "$i" ]; then
+							INEXCLUDES=1
+							break
+						fi
+					done
+					rm -f /tmp/_backup-script-excludes.tmp
+					touch /tmp/_backup-script-excludes.tmp
+					IFS=$'\n'
+					for x in $EXCLUDES; do
+						echo $x >> /tmp/_backup-script-excludes.tmp
+					done
+					unset IFS
+					if [ "$INEXCLUDES" == "0" ]; then
+						if [ "$i" == "/" ]; then
+							DESTFILE="sysroot"
+						else
+							DESTFILE=$(echo $i | sed 's|^/|sysroot-|' | sed 's|/|-|g')
+						fi
+						echo "         "Copying:"  $i"
+						CMD="tar cvp --one-file-system --xattrs --xattrs-include='*.*' --numeric-owner $([ "$ENCRYPT" == "1" ] && echo "-f -") $([ "$ENCRYPT" != "1" ] && echo "-f \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.tar\"") -X /tmp/_backup-script-excludes.tmp \"$i\" $(if [ "$LOG_FILE" == "1" ]; then [ "$ENCRYPT" != "1" ] && echo "1>> \"$LOGFILE\" 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> \"$LOGFILE\""; else [ "$ENCRYPT" != "1" ] && echo "1>> /dev/null 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> /dev/null"; fi) $([ "$ENCRYPT" == "1" ] && echo "| gpg -z 0 --batch -c --symmetric --cipher-algo AES256 --passphrase "$PASSWORD" --output \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.tar.gpg\"")"
+						[ "$DEBUG" == "1" ] && echo "         "$CMD && bash -c "$CMD"
+						[ "$DEBUG" == "0" ] && bash -c "$CMD"
+					fi
+					rm -f /tmp/_backup-script-excludes.tmp
+				fi
+			done ; } 2>> "$TIMELOGFILE"
+		}
+		cmd_targz () {
+			{ time for i in $SOURCES; do
+				if [ -f "$i" ] || [ -d "$i" ]; then
+					INEXCLUDES=0
+					for j in $EXCLUDES; do
+						if [ "$j" == "$i" ]; then
+							INEXCLUDES=1
+							break
+						fi
+					done
+					rm -f /tmp/_backup-script-excludes.tmp
+					touch /tmp/_backup-script-excludes.tmp
+					IFS=$'\n'
+					for x in $EXCLUDES; do
+						echo $x >> /tmp/_backup-script-excludes.tmp
+					done
+					unset IFS
+					if [ "$INEXCLUDES" == "0" ]; then
+						if [ "$i" == "/" ]; then
+							DESTFILE="sysroot"
+						else
+							DESTFILE=$(echo $i | sed 's|^/|sysroot-|' | sed 's|/|-|g')
+						fi
+						echo "         "Copying:"  $i"
+						CMD="tar czvp --one-file-system --xattrs --xattrs-include='*.*' --numeric-owner $([ "$ENCRYPT" == "1" ] && echo "-f -") $([ "$ENCRYPT" != "1" ] && echo "-f \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.tar.gz\"") -X /tmp/_backup-script-excludes.tmp \"$i\" $(if [ "$LOG_FILE" == "1" ]; then [ "$ENCRYPT" != "1" ] && echo "1>> \"$LOGFILE\" 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> \"$LOGFILE\""; else [ "$ENCRYPT" != "1" ] && echo "1>> /dev/null 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> /dev/null"; fi) $([ "$ENCRYPT" == "1" ] && echo "| gpg -z 0 --batch -c --symmetric --cipher-algo AES256 --passphrase "$PASSWORD" --output \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.tar.gz.gpg\"")"
+						[ "$DEBUG" == "1" ] && echo "         "$CMD && bash -c "$CMD"
+						[ "$DEBUG" == "0" ] && bash -c "$CMD"
+					fi
+					rm -f /tmp/_backup-script-excludes.tmp
+				fi
+			done ; } 2>> "$TIMELOGFILE"
+		}
+		cmd_tarbz2 () {
+			{ time for i in $SOURCES; do
+				if [ -f "$i" ] || [ -d "$i" ]; then
+					INEXCLUDES=0
+					for j in $EXCLUDES; do
+						if [ "$j" == "$i" ]; then
+							INEXCLUDES=1
+							break
+						fi
+					done
+					rm -f /tmp/_backup-script-excludes.tmp
+					touch /tmp/_backup-script-excludes.tmp
+					IFS=$'\n'
+					for x in $EXCLUDES; do
+						echo $x >> /tmp/_backup-script-excludes.tmp
+					done
+					unset IFS
+					if [ "$INEXCLUDES" == "0" ]; then
+						if [ "$i" == "/" ]; then
+							DESTFILE="sysroot"
+						else
+							DESTFILE=$(echo $i | sed 's|^/|sysroot-|' | sed 's|/|-|g')
+						fi
+						echo "         "Copying:"  $i"
+						CMD="tar cjvp --one-file-system --xattrs --xattrs-include='*.*' --numeric-owner $([ "$ENCRYPT" == "1" ] && echo "-f -") $([ "$ENCRYPT" != "1" ] && echo "-f \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.tar.bz2\"") -X /tmp/_backup-script-excludes.tmp \"$i\" $(if [ "$LOG_FILE" == "1" ]; then [ "$ENCRYPT" != "1" ] && echo "1>> \"$LOGFILE\" 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> \"$LOGFILE\""; else [ "$ENCRYPT" != "1" ] && echo "1>> /dev/null 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> /dev/null"; fi) $([ "$ENCRYPT" == "1" ] && echo "| gpg -z 0 --batch -c --symmetric --cipher-algo AES256 --passphrase "$PASSWORD" --output \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.tar.bz2.gpg\"")"
+						[ "$DEBUG" == "1" ] && echo "         "$CMD && bash -c "$CMD"
+						[ "$DEBUG" == "0" ] && bash -c "$CMD"
+					fi
+					rm -f /tmp/_backup-script-excludes.tmp
+				fi
+			done ; } 2>> "$TIMELOGFILE"
+		}
+		cmd_tarxz () {
+			{ time for i in $SOURCES; do
+				if [ -f "$i" ] || [ -d "$i" ]; then
+					INEXCLUDES=0
+					for j in $EXCLUDES; do
+						if [ "$j" == "$i" ]; then
+							INEXCLUDES=1
+							break
+						fi
+					done
+					rm -f /tmp/_backup-script-excludes.tmp
+					touch /tmp/_backup-script-excludes.tmp
+					IFS=$'\n'
+					for x in $EXCLUDES; do
+						echo $x >> /tmp/_backup-script-excludes.tmp
+					done
+					unset IFS
+					if [ "$INEXCLUDES" == "0" ]; then
+						if [ "$i" == "/" ]; then
+							DESTFILE="sysroot"
+						else
+							DESTFILE=$(echo $i | sed 's|^/|sysroot-|' | sed 's|/|-|g')
+						fi
+						echo "         "Copying:"  $i"
+						CMD="tar cJvp --one-file-system --xattrs --xattrs-include='*.*' --numeric-owner $([ "$ENCRYPT" == "1" ] && echo "-f -") $([ "$ENCRYPT" != "1" ] && echo "-f \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.xz.zst\"") -X /tmp/_backup-script-excludes.tmp \"$i\" $(if [ "$LOG_FILE" == "1" ]; then [ "$ENCRYPT" != "1" ] && echo "1>> \"$LOGFILE\" 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> \"$LOGFILE\""; else [ "$ENCRYPT" != "1" ] && echo "1>> /dev/null 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> /dev/null"; fi) $([ "$ENCRYPT" == "1" ] && echo "| gpg -z 0 --batch -c --symmetric --cipher-algo AES256 --passphrase "$PASSWORD" --output \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.tar.xz.gpg\"")"
+						[ "$DEBUG" == "1" ] && echo "         "$CMD && bash -c "$CMD"
+						[ "$DEBUG" == "0" ] && bash -c "$CMD"
+					fi
+					rm -f /tmp/_backup-script-excludes.tmp
+				fi
+			done ; } 2>> "$TIMELOGFILE"
+		}
+		cmd_tarzstd () {
+			{ time for i in $SOURCES; do
+				if [ -f "$i" ] || [ -d "$i" ]; then
+					INEXCLUDES=0
+					for j in $EXCLUDES; do
+						if [ "$j" == "$i" ]; then
+							INEXCLUDES=1
+							break
+						fi
+					done
+					rm -f /tmp/_backup-script-excludes.tmp
+					touch /tmp/_backup-script-excludes.tmp
+					IFS=$'\n'
+					for x in $EXCLUDES; do
+						echo $x >> /tmp/_backup-script-excludes.tmp
+					done
+					unset IFS
+					if [ "$INEXCLUDES" == "0" ]; then
+						if [ "$i" == "/" ]; then
+							DESTFILE="sysroot"
+						else
+							DESTFILE=$(echo $i | sed 's|^/|sysroot-|' | sed 's|/|-|g')
+						fi
+						echo "         "Copying:"  $i"
+						CMD="tar cvp --one-file-system -I zstd --xattrs --xattrs-include='*.*' --numeric-owner $([ "$ENCRYPT" == "1" ] && echo "-f -") $([ "$ENCRYPT" != "1" ] && echo "-f \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.tar.zst\"") -X /tmp/_backup-script-excludes.tmp \"$i\" $(if [ "$LOG_FILE" == "1" ]; then [ "$ENCRYPT" != "1" ] && echo "1>> \"$LOGFILE\" 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> \"$LOGFILE\""; else [ "$ENCRYPT" != "1" ] && echo "1>> /dev/null 2>&1";  [ "$ENCRYPT" == "1" ] && echo "2>> /dev/null"; fi) $([ "$ENCRYPT" == "1" ] && echo "| gpg -z 0 --batch -c --symmetric --cipher-algo AES256 --passphrase "$PASSWORD" --output \"$DESTINATION/$DATE_FORMAT/${DESTFILE}.tar.zst.gpg\"")"
+						[ "$DEBUG" == "1" ] && echo "         "$CMD && bash -c "$CMD"
+						[ "$DEBUG" == "0" ] && bash -c "$CMD"
+					fi
+					rm -f /tmp/_backup-script-excludes.tmp
+				fi
+			done ; } 2>> "$TIMELOGFILE"
+		}
+		cmd_qemuimg () {
+			{ time for i in $SOURCES; do
+				if [ -f "$i" ] || [ -d "$i" ]; then
+					i=$(echo $i | sed 's|^/||')
+					echo "         "Copying:"  /""$i"
+					CMD="qemu-img convert -O qcow2 \"$i\" \"$DESTINATION/$DATE_FORMAT/$(echo $i | sed 's%^/%%' | sed 's%/%-%'g)\" 1> \"$LOGFILE\" 2>&1"
+					[ "$DEBUG" == "1" ] && echo "         "$CMD && bash -c "$CMD"
+					[ "$DEBUG" == "0" ] && bash -c "$CMD"
+				fi
+			done ; } 2>> "$TIMELOGFILE"
+		}
+
+		echo
+		echo "   "Starting the backup! Writing to:
+		echo "      ""$DESTINATION"/$DATE_FORMAT
+
+		[ "$COMMAND" == "rsync-hardlinks" ] && CURRENT="$(ls -1d "$DESTINATION"/* 2> /dev/null | tail -n1)"
+		mkdir -p "$DESTINATION"/$DATE_FORMAT
+		LOGFILE="$DESTINATION/$DATE_FORMAT/backup.log"
+		TIMELOGFILE="$DESTINATION/$DATE_FORMAT/time.log"
+		rm -rf "$LOGFILE"
+		rm -rf "$TIMELOGFILE"
+
+		echo Duration of the backup: >> "$TIMELOGFILE"
+		echo ----------------------- >> "$TIMELOGFILE"
+
+		case $COMMAND in
+			rsync)
+				cmd_rsync
+				;;
+			rsync-hardlinks)
+				cmd_rsync_hardlinks
+				;;
+			tar)
+				cmd_tar
+				;;
+			targz)
+				cmd_targz
+				;;
+			tarbz2)
+				cmd_tarbz2
+				;;
+			tarxz)
+				cmd_tarxz
+				;;
+			tarzstd)
+				cmd_tarzstd
+				;;
+			qemu-img)
+				cmd_qemuimg
+				;;
+			*)
+				cmd_rsync
+				;;
+		esac
+		sync
+
+		sed -i 's/real\t//; s/user.*//; s/sys.*//' "$TIMELOGFILE" > /dev/null 2>&1
+		sed -i -e :a -e '/^\n*$/{$d;N;};/\n$/ba' "$TIMELOGFILE" > /dev/null 2>&1
+
+		if [ "$POST_COMMAND" != "" ]; then
+			echo
+			echo "   ""Running POST_COMMAND:"
+			echo "      ""$POST_COMMAND"
+			bash -c "$POST_COMMAND"
+		fi
+	fi
+
+	unset ENABLE_BACKUP
+	unset DESTINATION
+	unset SOURCES
+	unset EXCLUDES
+	unset COMMAND
+	unset ENCRYPT
+	unset PASSWORD
+	unset PRE_COMMAND
+	unset POST_COMMAND
+	unset KEEP_BACKUPS
+	unset LOG_FILE
+	unset DELETEMODE
+	unset DEBUG
+done
+
+sync
+
+if [ "$SHUTDOWN" == "1" ]; then
+	shut_down
+fi

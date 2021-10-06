@@ -1,0 +1,260 @@
+#!/usr/bin/env python3
+import os
+import re
+import sys
+
+
+def usage():
+    print('''\
+killswitch:  A custom VPN killswitch script to be used with a VPN connection.
+Reads its settings from the file \'/etc/killswitch.conf\'...
+
+usage:   killswitch [COMMAND] [OPTION]
+
+    commands (one allowed):
+        on:           enable the killswitch
+        off:          disable the killswitch
+        status:       is the killswitch on or off?
+        s|settings:   print the settings from /etc/killswitch.conf
+        e|example:    print an example settings file
+
+    options:
+        -v|--verbose: with \'on\' or \'off\': print each applied rule
+                      with \'status\': run \'sudo iptables-legacy -S\'
+        -h|--help:    this message\
+''')
+
+
+def print_example():
+    print('''\
+# Example settings file for the "killswitch" script
+
+#################
+# VPN settings: #
+#################
+
+vpn_devnames="tun0"
+vpn_dns="aaa.aaa.aaa.aaa bbb.bbb.bbb.bbb"
+
+# the currently used VPN servers IP:
+# (If left empty, then "$vpn_servers_file" will be tried)
+vpn_server_ip="aaa.aaa.aaa.aaa"
+
+# if you have a list of VPN servers, that you switch often, then add their IPs in a file - one IP per line:
+# (If left empty, then "$vpn_server_ip" will be tried)
+#vpn_servers_file="/etc/vpn-servers"
+
+##############################
+# LAN networks to whitelist: #
+##############################
+
+# your main interface, that connects to the internet:
+lan_devname="wlan0"
+
+# list of LAN subnets to whitelist, seperated by spaces:
+lan_subnets="192.168.100.0/24"
+
+# if using a bridge for a VM, we need to forward LAN to VM guests during VPN connection:
+bridge_devname="wlanbridge"\
+''')
+
+
+def get_settings():
+    if not os.path.isfile("/etc/killswitch.conf"):
+        print('Error: settings file /etc/killswitch.conf not found!')
+        exit(1)
+    settings_temp = {}
+    with open("/etc/killswitch.conf") as file:
+        for line in file:
+            if re.search('=', line) and not re.search('^#', line):
+                name, value = line.split("=")
+                value = re.sub(' *#.*$', '', value)
+                settings_temp[str(name)] = str(value).replace('\n', '').replace('\"', '')
+    return settings_temp
+
+
+def get_status(settings_internal, verbose_internal):
+    iptables_save_stream = os.popen('sudo iptables-legacy -S')
+    iptables_save = str(iptables_save_stream.read()).splitlines()
+    iptables_save_array = []
+    for rule in iptables_save:
+        iptables_save_array.append(rule)
+
+    rule_list = define_rules(settings_internal)
+
+    active = True
+
+    for rule in rule_list:
+        if rule not in iptables_save_array:
+            active = False
+
+    if active:
+        if verbose_internal:
+            for rule in iptables_save_array:
+                print(rule)
+            print('')
+        print('status: VPN killswitch is on!')
+    else:
+        if verbose_internal:
+            for rule in iptables_save_array:
+                print(rule)
+            print('')
+        print('status: VPN killswitch is off!')
+
+
+def define_rules(settings_internal):
+    rule_list = list([])
+
+    rule_list.append('-P INPUT DROP')
+    rule_list.append('-P OUTPUT DROP')
+    rule_list.append('-P FORWARD DROP')
+    rule_list.append('-A OUTPUT -o lo -j ACCEPT')
+    rule_list.append('-A INPUT -i lo -j ACCEPT')
+    for lan_subnet in settings_internal['lan_subnets'].split():
+        rule_list.append('-A OUTPUT -d ' + lan_subnet + ' -j ACCEPT')
+        rule_list.append('-A INPUT -s ' + lan_subnet + ' -j ACCEPT')
+    rule_list.append('-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT')
+    rule_list.append('-A INPUT -s 127.0.0.0/8 ! -i lo -j REJECT --reject-with icmp-port-unreachable')
+    for vpn_devname in settings_internal['vpn_devnames'].split():
+        rule_list.append('-A OUTPUT -o ' + vpn_devname + ' -j ACCEPT')
+    for vpn_dns in settings_internal['vpn_dns'].split():
+        rule_list.append('-A OUTPUT -d ' + vpn_dns + '/32 -j ACCEPT')
+    if 'vpn_server_ip' in settings_internal:
+        rule_list.append('-A OUTPUT -d ' + settings_internal['vpn_server_ip'] + '/32 -o ' +
+                         settings_internal['lan_devname'] + ' -j ACCEPT')
+    if 'vpn_servers_file' in settings_internal:
+        file = settings_internal['vpn_servers_file'].split()[0]
+        vpn_servers_file = open(file)
+        vpn_servers_list = vpn_servers_file.read()
+        for vpn_server in vpn_servers_list.split():
+            rule_list.append('-A OUTPUT -d ' + vpn_server + '/32 -o ' + settings_internal['lan_devname'] + ' -j ACCEPT')
+    if 'bridge_devname' in settings_internal:
+        rule_list.append('-A OUTPUT -o ' + settings_internal['bridge_devname'] + ' -j ACCEPT')
+        rule_list.append('-A INPUT -i ' + settings_internal['bridge_devname'] + ' -j ACCEPT')
+    if 'bridge_devname' in settings_internal:
+        rule_list.append('-A FORWARD -i ' + settings_internal['bridge_devname'] + ' -o ' +
+                         settings_internal['lan_devname'] + ' -j ACCEPT')
+        rule_list.append('-A FORWARD -i ' + settings_internal['lan_devname'] + ' -o ' +
+                         settings_internal['bridge_devname'] + ' -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT')
+    return rule_list
+
+
+def apply_rules(settings_internal, verbose_internal):
+    iptables_save_stream = os.popen('sudo iptables-legacy -S')
+    iptables_save = str(iptables_save_stream.read()).splitlines()
+    iptables_save_array = []
+    for rule in iptables_save:
+        iptables_save_array.append(rule)
+
+    rule_list = define_rules(settings_internal)
+
+    changed = False
+
+    for rule in rule_list:
+        if rule not in iptables_save_array:
+            if verbose_internal:
+                print('Applying rule:', rule)
+            os.popen('sudo iptables-legacy -w ' + rule)
+            changed = True
+    if not changed:
+        print('VPN killswitch already on! No rules to apply...')
+    else:
+        if verbose_internal:
+            print('\nVPN killswitch activated!')
+        else:
+            print('VPN killswitch activated!')
+
+
+def delete_rules(settings_internal, verbose_internal):
+    iptables_save_stream = os.popen('sudo iptables-legacy -S')
+    iptables_save = str(iptables_save_stream.read()).splitlines()
+    iptables_save_list = []
+    for rule in iptables_save:
+        iptables_save_list.append(rule)
+
+    rule_list = define_rules(settings_internal)
+
+    changed = False
+
+    if '-P INPUT DROP' in iptables_save_list:
+        if verbose_internal:
+            print('Applying rule: -P INPUT ACCEPT')
+        os.popen('sudo iptables-legacy -w -P INPUT ACCEPT')
+        rule_list.remove('-P INPUT DROP')
+        changed = True
+    if '-P OUTPUT DROP' in iptables_save_list:
+        if verbose_internal:
+            print('Applying rule: -P OUTPUT ACCEPT')
+        os.popen('sudo iptables-legacy -w -P OUTPUT ACCEPT')
+        rule_list.remove('-P OUTPUT DROP')
+        changed = True
+    if '-P FORWARD DROP' in iptables_save_list:
+        if verbose_internal:
+            print('Applying rule: -P FORWARD ACCEPT')
+        os.popen('sudo iptables-legacy -w -P FORWARD ACCEPT')
+        rule_list.remove('-P FORWARD DROP')
+        changed = True
+    for rule in rule_list:
+        if rule in iptables_save_list:
+            if verbose_internal:
+                print('Applying rule:', rule.replace('-A', '-D'))
+            os.popen('sudo iptables-legacy -w ' + rule.replace('-A', '-D'))
+            changed = True
+
+    if not changed:
+        print('VPN killswitch already off! No rules to apply...')
+    else:
+        if verbose_internal:
+            print('\nVPN killswitch deactivated!')
+        else:
+            print('VPN killswitch deactivated!')
+
+
+if __name__ == '__main__':
+    number_args = len(sys.argv)
+    if number_args == 1:
+        usage()
+        exit(1)
+    arguments = sys.argv
+    arguments.pop(0)
+    if '-h' in arguments or '--help' in arguments:
+        usage()
+        exit(0)
+    valid_arguments = ['on', 'off', 'status', 's', 'settings', 'e', 'example', '-h', '--help', '-v', '--verbose']
+    for a in arguments:
+        if a not in valid_arguments:
+            usage()
+            exit(1)
+    valid_commands = ['on', 'off', 'status', 's', 'settings', 'e', 'example']
+    for v in valid_commands:
+        for w in valid_commands:
+            if v != w:
+                if v in arguments and w in arguments:
+                    usage()
+                    exit(1)
+
+    settings = get_settings()
+    verbose = False
+    if '-v' in arguments or '--verbose' in arguments:
+        valid_for_verbose = False
+        for vc in ['on', 'off', 'status']:
+            for a in arguments:
+                if a == vc:
+                    valid_for_verbose = True
+        if not valid_for_verbose:
+            usage()
+            exit(1)
+        else:
+            verbose = True
+    if 'on' in arguments:
+        apply_rules(settings, verbose)
+    elif 'off' in arguments:
+        delete_rules(settings, verbose)
+    elif 'status' in arguments:
+        get_status(settings, verbose)
+    elif 's' in arguments or 'settings' in arguments:
+        print('Getting settings from file /etc/killswitch.conf:\n')
+        for setting in get_settings():
+            print(setting, '=', '\"' + get_settings()[setting] + '\"')
+    elif 'e' in arguments or 'example' in arguments:
+        print_example()

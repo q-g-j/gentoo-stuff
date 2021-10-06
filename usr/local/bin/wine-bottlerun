@@ -1,0 +1,72 @@
+#!/bin/bash
+
+usage() {
+cat <<EOF
+wine-bottlerun
+--------------
+
+This script helps to run a Windows app via wine in a WINEPREFIX aka "bottle".
+Just create a symlink to this script and name it: "wine-<appname>". Example:
+	ln -s /usr/local/bin/wine-bottlerun /usr/local/bin/wine-mp3tag
+
+Then run the script like this:
+ 	wine-mp3tag (<arch>) wine <app.exe> <parameters>
+
+This creates or updates a WINEPREFIX in \$HOME/.wine-bottles and runs the Windows app.
+"<arch>" is optional and must be "32bit" or "64bit". Defaults to "64bit".
+After that it will be detected by the script and is not needed anymore!
+
+Example for WINEPREFIX creation:
+	wine-mp3tag 32bit wine setup.exe
+
+After that, just:
+	wine-mp3tag wine Mp3tag.exe
+
+Or use the desktop file created in your start menu.
+
+Also works with winetricks:
+	wine-mp3tag winetricks
+EOF
+}
+
+if [ "$1" == "" ]; then
+	usage
+	exit 1
+fi
+
+if [ "$2" == "" ]; then
+	if [ "$1" == "-h" -o "$1" == "--help" ]; then
+		usage
+		exit 0
+	fi
+fi
+
+BOTTLE_NAME=$(basename "$0" | sed 's/wine-//')
+BOTTLE_DIR="$HOME/.wine-bottles/$BOTTLE_NAME"
+
+if [ ! -d "$BOTTLE_DIR" ]; then
+	if [ "$1" == "32bit" ]; then
+		ARCH=32;
+	else
+		ARCH=64
+	fi
+else
+	if [ -d "$BOTTLE_DIR/drive_c/Program Files (x86)" ]; then
+		ARCH=64
+	else
+		ARCH=32
+	fi
+fi
+
+mkdir -p $BOTTLE_DIR
+
+export WINEPREFIX="$BOTTLE_DIR"
+export WINEARCH=win$ARCH
+
+bash -c "$(echo $(for i in "$@"; do
+	if [ "$(echo $i | grep -e " ")" != "" ]; then
+		echo -n \""$i\" "
+	else
+		echo -n "$i "
+	fi
+done) | sed 's/^32bit //' | sed 's/^64bit //')"

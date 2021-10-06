@@ -1,0 +1,2 @@
+dev-qt/qt-creator -clang
+dev-java/openjdk-bin:11 -gentoo-vm

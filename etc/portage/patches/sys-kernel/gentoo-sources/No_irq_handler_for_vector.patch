@@ -1,0 +1,15 @@
+--- a/arch/x86/kernel/irq.c	2020-12-13 23:41:30.000000000 +0100
++++ b/arch/x86/kernel/irq.c	2021-01-14 17:51:33.009988328 +0100
+@@ -251,9 +251,10 @@
+ 		ack_APIC_irq();
+ 
+ 		if (desc == VECTOR_UNUSED) {
+-			pr_emerg_ratelimited("%s: %d.%u No irq handler for vector\n",
++/*			pr_emerg_ratelimited("%s: %d.%u No irq handler for vector\n",
+ 					     __func__, smp_processor_id(),
+-					     vector);
++					     vector); */
++			;
+ 		} else {
+ 			__this_cpu_write(vector_irq[vector], VECTOR_UNUSED);
+ 		}

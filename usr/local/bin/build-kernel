@@ -1,0 +1,93 @@
+#!/bin/bash
+
+JOBS="-j12"
+
+
+
+trap ctrl_c INT
+
+ctrl_c() {
+	exit 1
+}
+
+if [ "$(basename -a `readlink -f /usr/src/linux` | grep -e "-rt[0-9]*$")" != "" ]; then
+	KERNEL_VERSION=$(basename -a `readlink -f /usr/src/linux` | sed s/linux-// | sed 's/\([0-9\.]-\)/\1rt-/')
+else
+	KERNEL_VERSION=$(basename -a `readlink -f /usr/src/linux` | sed s/linux-//)
+fi
+
+
+
+usage() {
+	echo "Usage:"
+	echo "   \"build-kernel\""
+	echo "or:"
+	echo "   \"build-kernel <option1> <option2> <option2>\""
+	echo
+	echo "Options:"
+	echo "   -k or --kernel         run \"make nconfig\" and build and install the kernel with the kernel modules"
+	echo "   -d or --dracut         build and install the initramfs with dracut"
+	echo "   -g or --grub           install and update grub"
+	echo
+	echo "Default / no options:     run all of the above"
+}
+
+build_kernel() {
+	cd /usr/src/linux
+	sudo make $JOBS nconfig
+	sudo make $JOBS
+	sudo make $JOBS modules
+	sudo make $JOBS modules_install
+	sudo make $JOBS install
+	sudo rm -f /boot/*.old
+	sudo emerge @module-rebuild
+}
+
+update_dracut() {
+	sudo dracut --host-only -f --fstab /boot/initramfs-$KERNEL_VERSION $KERNEL_VERSION
+}
+
+update_grub() {
+	sudo grub-install --efi-directory=/boot
+	sudo grub-mkconfig -o /boot/grub/grub.cfg
+}
+
+[ ! -z $4 ] && usage && exit 1
+
+[ ! -z $1 ] && [ "$1" != "-k" -a "$1" != "--kernel" -a "$1" != "-d" -a "$1" != "--dracut" -a "$1" != "-g" -a "$1" != "--dracut" ] && usage
+[ ! -z $2 ] && [ "$2" != "-k" -a "$2" != "--kernel" -a "$2" != "-d" -a "$2" != "--dracut" -a "$2" != "-g" -a "$2" != "--dracut" ] && usage
+[ ! -z $3 ] && [ "$3" != "-k" -a "$3" != "--kernel" -a "$3" != "-d" -a "$3" != "--dracut" -a "$3" != "-g" -a "$3" != "--dracut" ] && usage
+
+ARGS=$(for i in "$@"; do echo $i; done | uniq)
+
+K=0
+D=0
+G=0
+
+if [ "$ARGS" == "" ]; then
+	build_kernel
+	update_dracut
+	update_grub
+else
+        for i in $ARGS; do
+                if [ "$i" == "-k" -o "$i" == "--kernel" ]; then
+			K=1
+                elif [ "$i" == "-d" -o "$i" == "--dracut" ]; then
+			D=1
+                elif [ "$i" == "-g" -o "$i" == "--grub" ]; then
+			G=1
+		fi
+        done
+
+	if [ $K == 1 ]; then
+		build_kernel
+	fi
+	if [ $D == 1 ]; then
+		update_dracut
+	fi
+	if [ $G == 1 ]; then
+		update_grub
+	fi
+fi
+
+

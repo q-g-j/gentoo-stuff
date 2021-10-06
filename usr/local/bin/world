@@ -1,0 +1,110 @@
+#!/bin/sh
+
+trap ctrl_c INT
+
+ctrl_c() {
+	exit 1
+}
+
+do_sync() {
+	echo
+	echo Running \"eix-sync\" ...
+	echo ----------------------
+	echo
+	sudo eix-sync
+}
+
+do_world() {
+	echo
+	echo Running \"emerge world --with-bdeps=y -DNuav\" ...
+	echo ------------------------------------------------
+	echo
+	sudo emerge world --with-bdeps=y -DNuav
+}
+
+do_clean() {
+	echo
+	echo Running \"emerge --depclean -a\" ...
+	echo ----------------------------------
+	echo
+	sudo emerge --depclean -a
+	echo
+	echo Running \"eclean-dist -d\" ...
+	echo ----------------------------
+	echo
+	sudo eclean-dist -d
+	echo
+	echo Running \"revdep-rebuild\" ...
+	echo ----------------------------
+	echo
+	sudo revdep-rebuild
+	set -eu
+	echo
+	echo Snap autoremove...
+	echo ------------------
+	echo
+	sudo LANG=C snap list --all | awk '/disabled/{print $1, $3}' |
+	while read snapname revision; do
+		sudo snap remove --purge "$snapname" --revision="$revision"
+	done
+	echo
+	echo Flatpak autoremove...
+	echo ---------------------
+	echo
+	sudo flatpak uninstall --unused
+}
+
+do_flat_snap() {
+	echo
+	echo Looking for Snap upgrades...
+	echo ----------------------------
+	echo
+	sudo snap refresh
+	echo
+	echo Looking for Flatpak upgrades...
+	echo -------------------------------
+	echo
+	sudo flatpak upgrade
+}
+
+
+ARGS=$(for i in "$@"; do echo $i; done | uniq)
+
+S=0
+W=0
+C=0
+FS=0
+
+if [ "$ARGS" == "" ]; then
+	do_sync
+	do_world
+	do_flat_snap
+	do_clean
+else
+        for i in $ARGS; do
+                if [ "$i" == "-s" -o "$i" == "--sync" ]; then
+                        S=1
+                elif [ "$i" == "-w" -o "$i" == "--world" ]; then
+                        W=1
+                elif [ "$i" == "-c" -o "$i" == "--clean" ]; then
+                        C=1
+                elif [ "$i" == "-fs" -o "$i" == "-f" -o "$i" == "--flatsnap" ]; then
+                        FS=1
+                fi
+        done
+
+        if [ $S == 1 ]; then
+                do_sync
+        fi
+        if [ $W == 1 ]; then
+                do_world
+        fi
+        if [ $FS == 1 ]; then
+                do_flat_snap
+        fi
+        if [ $C == 1 ]; then
+                do_clean
+        fi
+fi
+
+

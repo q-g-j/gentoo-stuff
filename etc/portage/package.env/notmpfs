@@ -1,0 +1,8 @@
+app-office/libreoffice	notmpfs.conf
+dev-lang/ghc		notmpfs.conf
+dev-lang/mono		notmpfs.conf
+dev-lang/rust		notmpfs.conf
+dev-lang/spidermonkey	notmpfs.conf
+dev-qt/qtwebengine	notmpfs.conf
+mail-client/thunderbird	notmpfs.conf
+sys-devel/gcc		notmpfs.conf

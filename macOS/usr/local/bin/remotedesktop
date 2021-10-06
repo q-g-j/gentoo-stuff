@@ -1,0 +1,3 @@
+#!/bin/bash
+cd $HOME/wfreerdp
+wine-wfreerdp wine64 wfreerdp.exe /v:182.12.100.1 /u:<linux-username> /p:<linux-password> /f /rfx /floatbar:sticky:off,default:hidden,show:fullscreen

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Watches CPU clock and temperature for my AMD Ryzen 5.
+# Needs lm-sensors installed and SENSORS_K10TEMP enabled in kernel config.
+
+IFS=$'\n'
+
+echo "LC_ALL=C
+IFS=$'\n'
+CPUINFO=\$(sudo cat /proc/cpuinfo | grep MHz | sed 's/\t//g' | sed 's/cpu//g')
+COUNTER=0
+for i in \$CPUINFO; do
+        [ \$COUNTER -lt 10 ] && echo "CPU\" \"  \$COUNTER""\$i"
+        [ \$COUNTER -ge 10 ] && echo "CPU \$COUNTER""\$i"
+        COUNTER=\$((COUNTER+1))
+done" > /tmp/_cpuclock_tmp.sh
+
+echo "LC_ALL=C
+CPUTEMP=\$(sensors | grep -A99 k10temp | grep Tdie | sed 's/Tdie://' | sed 's/^.*+//')
+
+echo \"CPU temperature: \"\$CPUTEMP" > /tmp/_cputemp_tmp.sh
+
+watch -t -n 1 "sudo bash /tmp/_cpuclock_tmp.sh; echo; sudo bash /tmp/_cputemp_tmp.sh"
+
+rm -f /tmp/_cpuclock_tmp.sh /tmp/_cputemp_tmp.sh

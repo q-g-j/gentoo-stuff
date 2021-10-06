@@ -1,0 +1,13 @@
+--- a/include/hw/acpi/aml-build.h	2020-08-11 21:17:15.000000000 +0200
++++ b/include/hw/acpi/aml-build.h	2020-11-30 00:25:45.441582877 +0100
+@@ -7,8 +7,8 @@
+ /* Reserve RAM space for tables: add another order of magnitude. */
+ #define ACPI_BUILD_TABLE_MAX_SIZE         0x200000
+ 
+-#define ACPI_BUILD_APPNAME6 "BOCHS "
+-#define ACPI_BUILD_APPNAME4 "BXPC"
++#define ACPI_BUILD_APPNAME6 "AAAAA "
++#define ACPI_BUILD_APPNAME4 "BBBB"
+ 
+ #define ACPI_BUILD_TABLE_FILE "etc/acpi/tables"
+ #define ACPI_BUILD_RSDP_FILE "etc/acpi/rsdp"

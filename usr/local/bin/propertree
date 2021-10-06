@@ -1,0 +1,4 @@
+#!/bin/sh
+cd /opt/ProperTree
+#sudo ./ProperTree.command /mnt/macOS-EFI/EFI/OC/config.plist
+sudo ./ProperTree.command "$@"

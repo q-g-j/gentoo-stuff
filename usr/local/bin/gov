@@ -1,0 +1,38 @@
+#!/bin/bash
+
+GOV_AVAIL="$(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors)"
+
+usage() {
+echo "Usage: gov <governor>"
+echo "governors:"
+for i in $GOV_AVAIL; do
+	echo "    "$i
+done
+}
+
+if [ -z $1 ]; then
+	echo "Current CPU governor: "$(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor)
+	exit 0
+fi
+
+
+if [ "$2" != "" ]; then
+	usage
+	exit 1
+fi
+
+OK=0
+for i in $GOV_AVAIL; do
+	if [ "$1" == "$i" ]; then
+		for j in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do echo $1 | sudo tee $j > /dev/null; done
+		OK=1
+		break
+	fi
+done
+if [ "$OK" == "1" ]; then
+	echo Changed CPU governor to $1
+else
+	usage
+	exit 1
+fi
+exit 0

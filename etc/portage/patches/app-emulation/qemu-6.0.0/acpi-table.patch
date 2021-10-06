@@ -1,0 +1,13 @@
+--- a/include/hw/acpi/aml-build.h	2021-04-29 19:18:58.000000000 +0200
++++ b/include/hw/acpi/aml-build.h	2021-05-14 18:06:45.891261435 +0200
+@@ -4,8 +4,8 @@
+ #include "hw/acpi/acpi-defs.h"
+ #include "hw/acpi/bios-linker-loader.h"
+ 
+-#define ACPI_BUILD_APPNAME6 "BOCHS "
+-#define ACPI_BUILD_APPNAME8 "BXPC    "
++#define ACPI_BUILD_APPNAME6 "AAAAA "
++#define ACPI_BUILD_APPNAME8 "BBBB    "
+ 
+ #define ACPI_BUILD_TABLE_FILE "etc/acpi/tables"
+ #define ACPI_BUILD_RSDP_FILE "etc/acpi/rsdp"

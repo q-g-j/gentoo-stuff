@@ -1,0 +1,4 @@
+#!/bin/bash
+MYIP=`wget ipinfo.io/ip -qO -`
+INFOS=`curl ipinfo.io/$MYIP 2>/dev/null`
+echo -e "$INFOS\n" | grep -v { | grep -v } | sed -e :a -e '/^\n*$/{$d;N;};/\n$/ba'

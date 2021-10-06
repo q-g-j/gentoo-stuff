@@ -1,0 +1,26 @@
+#!/bin/bash
+
+PATH=$PATH:/usr/local/bin
+
+. /etc/killswitch.conf
+
+for i in $vpn_devnames; do
+	case $1 in $i)
+		case $2 in
+			up)
+				killswitch on
+				;;
+			down)
+				;;
+			pre-up)
+				;;
+			post-down)
+				;;
+			*)
+				;;
+		esac
+		;;
+	esac
+done
+
+exit 0

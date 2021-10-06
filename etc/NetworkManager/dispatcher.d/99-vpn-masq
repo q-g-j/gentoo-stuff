@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# change to the tun/tap device which is used by the VPN conneciton
+vpn_devnames="openvpntun tun0"
+
+LC_ALL=C
+PATH=$PATH:/sbin
+
+for i in $vpn_devnames; do
+	case $1 in $i)
+		case $2 in
+			up)
+				iptables-legacy -t nat -A POSTROUTING -o $i -j MASQUERADE
+				;;
+			down)
+				iptables-legacy -t nat -D POSTROUTING -o $i -j MASQUERADE
+				;;
+			pre-up)
+				;;
+			post-down)
+				;;
+			*)
+				;;
+		esac
+		;;
+	esac
+done
+
+exit 0

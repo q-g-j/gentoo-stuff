@@ -1,0 +1,109 @@
+app-admin/keepassxc autotype browser keeshare
+app-crypt/sirikali kwallet
+app-editors/emacs xft
+app-emulation/cockpit-machines::cockpit
+	app-emulation/libvirt firewalld lvm
+	sys-fs/udisks lvm
+	net-libs/libssh server
+	sys-libs/libblockdev lvm
+app-emulation/libguestfs libvirt introspection lua python ruby
+	dev-ml/lablgtk gnomecanvas
+app-emulation/lxc doc man
+#app-emulation/lxd
+	dev-util/xdelta lzma
+app-emulation/looking-glass winhost
+app-emulation/libvirt lvm numa parted virt-network
+	net-dns/dnsmasq script
+app-emulation/qemu io-uring spice ssh usb usbredir vhost-user-fs virgl
+app-emulation/snapd -cgroup-hybrid gtk kde
+app-emulation/virt-manager
+	net-misc/spice-gtk usbredir
+	media-libs/freetype harfbuzz
+app-emulation/wine-staging faudio netapi mingw osmesa themes
+app-emulation/wine-vanilla faudio netapi mingw osmesa
+	media-libs/libsdl2 haptic
+	# sys-libs/libunwind[zlib]
+		sys-libs/zlib static-libs
+app-misc/mc -slang
+#app-portage/pfl
+	sys-apps/util-linux caps
+app-text/calibre -python_single_target_python3_8
+
+dev-db/sqlite -icu
+dev-lang/kotlin-bin javascript
+dev-lang/mono minimal
+dev-lang/python -bluetooth tk
+dev-lang/rust rustfmt
+dev-python/PyQt5 webchannel
+#dev-python/spyder
+	dev-python/python-lsp-server all-plugins
+	net-libs/zeromq drafts
+	x11-libs/wxGTK gstreamer
+dev-qt/qt-creator android autotools beautifier doc clang cmake cppcheck git lsp modeling python
+	dev-python/pyside2 location positioning printsupport quick webchannel
+dev-qt/qtmultimedia gstreamer
+dev-util/kdevelop subversion reviewboard hex
+
+games-strategy/wesnoth server
+games-util/steam-client-meta steamfonts trayicon
+
+# gnome-base/gnome-keyring
+	app-crypt/pinentry gnome-keyring
+
+# kde-apps/kdecore-meta -webengine: disable falkon web browser
+	kde-apps/kdecore-meta -webengine
+kde-apps/kdenetwork-meta -bittorrent
+kde-apps/kdesdk-meta git
+kde-apps/kdeutils-meta gpg
+kde-plasma/discover firmware flatpak
+	sys-apps/fwupd agent archive flashrom gnutls nvme uefi
+kde-plasma/ksysguard networkmanager
+kde-plasma/libksysguard webengine
+kde-plasma/kde-cli-tools kdesu
+kde-plasma/kdeplasma-addons comic webengine
+kde-apps/ksystemlog kdesu
+kde-plasma/plasma-meta discover grub plymouth
+
+media-sound/ardour::4nykey doc jack sse vst -bundled-libs
+	app-doc/doxygen dot
+	sci-libs/fftw threads
+media-sound/audacity jack
+media-sound/cadence a2jmidid
+media-sound/carla::qgj sf2 vst
+media-sound/musescore webengine
+# media-tv/droidcam
+	dev-libs/libdbusmenu gtk3
+media-video/handbrake gstreamer
+	media-video/ffmpeg fdk
+media-video/mpv -X -egl -lcms -opengl -wayland -xv
+media-video/pipewire extra gstreamer jack-client
+media-sound/pulseaudio bluetooth -libsamplerate ofono-headset
+
+net-dns/avahi -gtk mdnsresponder-compat
+net-firewall/iptables nftables
+net-fs/samba ads ldap
+	sys-libs/ldb ldap
+net-misc/curl adns -threads
+net-misc/freerdp server client
+net-misc/megasync::4nykey dolphin
+	net-misc/meganz-sdk::4nykey -ffmpeg libuv qt freeimage inotify mediainfo
+net-print/cups-filters -pdf
+net-print/hplip -hpcups -kde -libnotify -qt5 -static-ppds
+	media-gfx/sane-frontends -gtk
+	net-dns/avahi python
+net-wireless/bluez deprecated extra-tools
+
+sys-apps/cockpit::cockpit firewalld pcp
+sys-apps/dbus user-session
+sys-apps/pacman curl
+sys-apps/smartmontools update-drivedb
+#sys-apps/systemd cgroup-hybrid
+sys-block/gparted -kde fat ntfs
+sys-fs/squashfs-tools lz4 lzma
+# sys-boot/plymouth
+	x11-libs/libdrm libkms
+sys-libs/ncurses -gpm
+sys-kernel/linux-firmware unknown-license
+
+x11-misc/redshift appindicator geoclue
+x11-terms/xterm Xaw3d toolbar

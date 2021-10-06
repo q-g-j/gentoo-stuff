@@ -1,0 +1,22 @@
+--- a/net/bluetooth/hci_core.c	2021-07-14 22:45:30.109119042 +0200
++++ b/net/bluetooth/hci_core.c	2021-07-14 22:45:58.211257812 +0200
+@@ -271,7 +271,7 @@
+ static void bredr_setup(struct hci_request *req)
+ {
+ 	__le16 param;
+-	__u8 flt_type;
++//	__u8 flt_type;
+ 
+ 	/* Read Buffer Size (ACL mtu, max pkt, etc.) */
+ 	hci_req_add(req, HCI_OP_READ_BUFFER_SIZE, 0, NULL);
+@@ -292,8 +292,8 @@
+ 	hci_req_add(req, HCI_OP_READ_CURRENT_IAC_LAP, 0, NULL);
+ 
+ 	/* Clear Event Filters */
+-	flt_type = HCI_FLT_CLEAR_ALL;
+-	hci_req_add(req, HCI_OP_SET_EVENT_FLT, 1, &flt_type);
++//	flt_type = HCI_FLT_CLEAR_ALL;
++//	hci_req_add(req, HCI_OP_SET_EVENT_FLT, 1, &flt_type);
+ 
+ 	/* Connection accept timeout ~20 secs */
+ 	param = cpu_to_le16(0x7d00);

@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+
+<repositories version="1.0">
+	<repo priority="50" quality="experimental" status="unofficial">
+		<name>cockpit</name>
+		<description>Cockpit Overlay for Gentoo</description>
+		<homepage>https://github.com/orumin/cockpit-overlay</homepage>
+		<owner>
+			<email>unknown@gentoo.org</email>
+		</owner>
+		<source type="git">https://github.com/orumin/cockpit-overlay.git</source>
+	</repo>
+</repositories>

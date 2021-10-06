@@ -1,0 +1,9 @@
+#!/bin/bash
+iptables-legacy -P INPUT ACCEPT
+iptables-legacy -P FORWARD ACCEPT
+iptables-legacy -P OUTPUT ACCEPT
+iptables-legacy -t nat -F
+iptables-legacy -t mangle -F
+iptables-legacy -F
+iptables-legacy -X
+
