@@ -75,6 +75,7 @@ The hooks file creates the bridge device and starts the services on demand. When
 `sudo dmidecode --type 2`<br/>
 `sudo dmidecode --type 4`<br/>
 `sudo dmidecode --type 17`<br/><br/>
+Note: *"sys-apps/dmidecode"* has to be installed if using the following changes to the xml! On gentoo it was pulled in as a dependency of *"libvirt"*, on arch I had to manually install it.
 Here are the necessary changes to the [libvirt xml:](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win10.xml):
 ```
 domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
