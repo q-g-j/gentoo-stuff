@@ -18,6 +18,9 @@
 # CHANGEABLE VARIABLES: #
 #########################
 
+# CPUs that are passed to the guests:
+cpus="0 1 2 3 4 6 7 8 9 10"
+
 # WLAN bridging (used by "wlan_bridge start|stop" and "wlan_bridge_iptables start|stop")
 wlan_devname="wlan0"
 create_bridge=1                         # 0: use an existing bridge; 1: create a new bridge
@@ -53,104 +56,102 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
 # Usage: governor_set o|f|p|s
 # See below for explanations:
 governor_set() {
-	if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep)" == "" ]; then
-		case $1 in o|ondemand)
-			governor=ondemand
-			;;
-		f|performance)
-			governor=performance
-			;;
-		p|powersave)
-			governor=powersave
-			;;
-		s|schedutil)
-			governor=schedutil
-			;;
-		esac
-		for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-			echo $governor | tee $g > /dev/null;
-		done
-	fi
+    if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
+        case $1 in o|ondemand)
+            governor=ondemand
+            ;;
+        f|performance)
+            governor=performance
+            ;;
+        p|powersave)
+            governor=powersave
+            ;;
+        s|schedutil)
+            governor=schedutil
+            ;;
+        esac
+        for c in $cpus; do
+            echo $governor | tee /sys/devices/system/cpu/cpu$c/cpufreq/scaling_governor > /dev/null;
+        done
+    fi
 }
 
 # Some kernel optimizations, collected from various sources.
 # Not yet sure about their benefits...
 kernel_optimizations() {
-	if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep)" == "" ]; then
-		case $1 in start)
-			sysctl -w vm.stat_interval=300
-			sysctl -w kernel.watchdog=0
-			echo 0 > /sys/bus/workqueue/devices/writeback/numa
-			echo -1 > /proc/sys/kernel/sched_rt_runtime_us
-			echo 0 > /sys/kernel/debug/tracing/tracing_on
-			echo 0 > /sys/devices/system/machinecheck/machinecheck0/check_interval
-			echo 999999 > /proc/sys/vm/stat_interval
-			echo 1 > /sys/module/processor/parameters/latency_factor
-			;;
-		stop)
-			sysctl -w vm.stat_interval=1
-			sysctl -w kernel.watchdog=1
-			echo 1 > /sys/bus/workqueue/devices/writeback/numa
-			echo 950000 > /proc/sys/kernel/sched_rt_runtime_us
-			echo 1 > /sys/kernel/debug/tracing/tracing_on
-			echo 300 > /sys/devices/system/machinecheck/machinecheck0/check_interval
-			echo 1 > /proc/sys/vm/stat_interval
-			echo 2 > /sys/module/processor/parameters/latency_factor
-			;;
-		esac
-	fi
+    if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
+        case $1 in start)
+            sysctl -w vm.stat_interval=300
+            sysctl -w kernel.watchdog=0
+            echo 0 > /sys/bus/workqueue/devices/writeback/numa
+            echo -1 > /proc/sys/kernel/sched_rt_runtime_us
+            echo 0 > /sys/kernel/debug/tracing/tracing_on
+            echo 0 > /sys/devices/system/machinecheck/machinecheck0/check_interval
+            echo 1 > /sys/module/processor/parameters/latency_factor
+            ;;
+        stop)
+            sysctl -w vm.stat_interval=1
+            sysctl -w kernel.watchdog=1
+            echo 1 > /sys/bus/workqueue/devices/writeback/numa
+            echo 950000 > /proc/sys/kernel/sched_rt_runtime_us
+            echo 1 > /sys/kernel/debug/tracing/tracing_on
+            echo 300 > /sys/devices/system/machinecheck/machinecheck0/check_interval
+            echo 2 > /sys/module/processor/parameters/latency_factor
+            ;;
+        esac
+    fi
 }
 
 # Activate hugepages on first VMs start:
 hugepages() {
-	if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep)" == "" ]; then
-		case $1 in start)
-			sudo sysctl -q -w vm.nr_hugepages=0
-			sync
-			echo 1 > /proc/sys/vm/drop_caches
-			echo 2 > /proc/sys/vm/drop_caches
-			echo 3 > /proc/sys/vm/drop_caches
-			echo 1 > /proc/sys/vm/compact_memory
-			sync
-			SHMMAX_OLD=$(cat /proc/sys/kernel/shmmax)
-			SHMALL_OLD=$(cat /proc/sys/kernel/shmall)
-			echo "SHMMAX=$SHMMAX_OLD" > /tmp/hugepages_backup.tmp
-			echo "SHMALL=$SHMALL_OLD" >> /tmp/hugepages_backup.tmp
-			HUGEPAGE_SIZE_DEMANDED_MB=$(($hugepages_gb*1024))
-			while [ "$(($(cat /proc/meminfo  | grep Huge | grep Total | awk '{print $2}') * 2))" != "$HUGEPAGE_SIZE_DEMANDED_MB" ]; do
-				HUGEPAGE_SIZE_KB=`grep Hugepagesize /proc/meminfo | awk '{print $2}'`
-				HUGEPAGE_SIZE_MB=$((HUGEPAGE_SIZE_KB/1024))
-				HUGEPAGES_NEEDED_BASE=$(((HUGEPAGE_SIZE_DEMANDED_MB+HUGEPAGE_SIZE_MB-1)/HUGEPAGE_SIZE_MB))
-				HUGEPAGES_NEEDED=$(($HUGEPAGES_NEEDED_BASE))
-				echo $HUGEPAGES_NEEDED >/proc/sys/vm/nr_hugepages
-				sleep 1
-			done
-			HUGEPAGES_ALLOCATED=`cat /proc/sys/vm/nr_hugepages`
-			SHMMAX_NEEDED=$((HUGEPAGES_ALLOCATED*HUGEPAGE_SIZE_KB*1024))
-			echo $SHMMAX_NEEDED > /proc/sys/kernel/shmmax
-			PAGE_SIZE=`getconf PAGE_SIZE`
-			SHMALL_NEEDED=$((SHMMAX_NEEDED/PAGE_SIZE))
-			echo $SHMALL_NEEDED > /proc/sys/kernel/shmall
-			;;
-		stop)
-			if [ -f /tmp/hugepages_backup.tmp ]; then
-				. /tmp/hugepages_backup.tmp
-				echo $SHMMAX > /proc/sys/kernel/shmmax
-				echo $SHMALL > /proc/sys/kernel/shmall
-				rm /tmp/hugepages_backup.tmp
-			fi
-			sudo sysctl -q vm.nr_hugepages=0
-			;;
-		esac
-	fi
+    if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
+        case $1 in start)
+            sudo sysctl -q -w vm.nr_hugepages=0
+            sync
+            echo 1 > /proc/sys/vm/drop_caches
+            echo 2 > /proc/sys/vm/drop_caches
+            echo 3 > /proc/sys/vm/drop_caches
+            echo 1 > /proc/sys/vm/compact_memory
+            sync
+            SHMMAX_OLD=$(cat /proc/sys/kernel/shmmax)
+            SHMALL_OLD=$(cat /proc/sys/kernel/shmall)
+            echo "SHMMAX=$SHMMAX_OLD" > /tmp/hugepages_backup.tmp
+            echo "SHMALL=$SHMALL_OLD" >> /tmp/hugepages_backup.tmp
+            HUGEPAGE_SIZE_DEMANDED_MB=$(($hugepages_gb*1024))
+            while [ "$(($(cat /proc/meminfo  | grep Huge | grep Total | awk '{print $2}') * 2))" != "$HUGEPAGE_SIZE_DEMANDED_MB" ]; do
+                HUGEPAGE_SIZE_KB=`grep Hugepagesize /proc/meminfo | awk '{print $2}'`
+                HUGEPAGE_SIZE_MB=$((HUGEPAGE_SIZE_KB/1024))
+                HUGEPAGES_NEEDED_BASE=$(((HUGEPAGE_SIZE_DEMANDED_MB+HUGEPAGE_SIZE_MB-1)/HUGEPAGE_SIZE_MB))
+                HUGEPAGES_NEEDED=$(($HUGEPAGES_NEEDED_BASE))
+                echo $HUGEPAGES_NEEDED >/proc/sys/vm/nr_hugepages
+                sleep 1
+            done
+            HUGEPAGES_ALLOCATED=`cat /proc/sys/vm/nr_hugepages`
+            SHMMAX_NEEDED=$((HUGEPAGES_ALLOCATED*HUGEPAGE_SIZE_KB*1024))
+            echo $SHMMAX_NEEDED > /proc/sys/kernel/shmmax
+            PAGE_SIZE=`getconf PAGE_SIZE`
+            SHMALL_NEEDED=$((SHMMAX_NEEDED/PAGE_SIZE))
+            echo $SHMALL_NEEDED > /proc/sys/kernel/shmall
+            ;;
+        stop)
+            if [ -f /tmp/hugepages_backup.tmp ]; then
+                . /tmp/hugepages_backup.tmp
+                echo $SHMMAX > /proc/sys/kernel/shmmax
+                echo $SHMALL > /proc/sys/kernel/shmall
+                rm /tmp/hugepages_backup.tmp
+            fi
+            sudo sysctl -q vm.nr_hugepages=0
+            ;;
+        esac
+    fi
 }
 
 # WLAN bridging via arp (new, uses a routing table):
-# Needs "dnsmasq" and "parprouted" installed.
+# Needs "dnsmasq" installed (but disabled!), as well as "parprouted".
 # Assign $bridge_devname to your VMs.
 # All VMs will be on the same subnet as the host - starting from $dhcp_range_begin
 wlan_bridge() {
-	if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep)" == "" ]; then
+    if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
 		case $1 in start)
 			if [ $create_bridge -eq 1 ]; then
 				# create the bridge:
@@ -230,69 +231,69 @@ wlan_bridge() {
 }
 
 # WLAN bridging via arp (old method which uses iptables instead of a routing table):
-# Needs "dnsmasq", "iptables-legacy" and "parprouted".
+# Needs dnsmasq installed (but disabled!), as well as iptables-legacy and parprouted.
 # Assign $bridge_devname to your VMs.
 # All VMs will be on the same subnet as the host - starting from $dhcp_range_begin
 wlan_bridge_iptables() {
-	if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep)" == "" ]; then
-		case $1 in start)
-			if [ $create_bridge -eq 1 ]; then
-				# create the bridge:
-				ip link add name $bridge_devname type bridge
-				ip addr add $bridge_ip dev $bridge_devname
-				ip link set dev $bridge_devname up
-			elif [ "$(ip link | grep $bridge_devname)" == "" ]; then
-				exit 1
-			fi
+    if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
+        case $1 in start)
+            if [ $create_bridge -eq 1 ]; then
+                # create the bridge:
+                ip link add name $bridge_devname type bridge
+                ip addr add $bridge_ip dev $bridge_devname
+                ip link set dev $bridge_devname up
+            elif [ "$(ip link | grep $bridge_devname)" == "" ]; then
+                exit 1
+            fi
 
-			# start dnsmasq:
-			IFS=$'\n'
-			rm -f /tmp/_forward_hostnames.tmp
-			for i in $forward_hostnames; do echo "$i" >> /tmp/_forward_hostnames.tmp; done
-			unset IFS
-			dnsmasq \
-			--conf-file=/dev/null \
-			--interface=$bridge_devname \
-			--except-interface=virbr0 \
-			--bind-interfaces \
-			--dhcp-range=$dhcp_range_begin,$dhcp_range_end,1440h \
-			--no-hosts \
-			--addn-hosts=/tmp/_forward_hostnames.tmp \
-			--bogus-priv \
-			--no-poll \
-			--no-resolv \
-			--server=$wlan_gateway \
-			--port=53 \
-			--localise-queries \
-			--dhcp-option=44,0.0.0.0 \
-			--dhcp-option=45,0.0.0.0 \
-			--dhcp-option=46,8 \
-			--log-facility=/var/log/dnsmasq_wlanbridge.log
-			rm -f /tmp/_forward_hostnames.tmp
+            # start dnsmasq:
+            IFS=$'\n'
+            rm -f /tmp/_forward_hostnames.tmp
+            for i in $forward_hostnames; do echo "$i" >> /tmp/_forward_hostnames.tmp; done
+            unset IFS
+            dnsmasq \
+            --conf-file=/dev/null \
+            --interface=$bridge_devname \
+            --except-interface=virbr0 \
+            --bind-interfaces \
+            --dhcp-range=$dhcp_range_begin,$dhcp_range_end,1440h \
+            --no-hosts \
+            --addn-hosts=/tmp/_forward_hostnames.tmp \
+            --bogus-priv \
+            --no-poll \
+            --no-resolv \
+            --server=$wlan_gateway \
+            --port=53 \
+            --localise-queries \
+            --dhcp-option=44,0.0.0.0 \
+            --dhcp-option=45,0.0.0.0 \
+            --dhcp-option=46,8 \
+            --log-facility=/var/log/dnsmasq_wlanbridge.log
+            rm -f /tmp/_forward_hostnames.tmp
 
-			# share the internet connection:
-			iptables-legacy -t nat -A POSTROUTING -o $wlan_devname -j MASQUERADE
-		
-			# start parprouted:
-			parprouted $wlan_devname $bridge_devname
-			;;
-		stop)
-			# kill parprouted:
-			pkill parprouted
+            # share the internet connection:
+            iptables-legacy -t nat -A POSTROUTING -o $wlan_devname -j MASQUERADE
 
-			# kill dnsmasq:
-			kill $(ps ax | grep -e "dnsmasq --conf-file=/dev/null" | grep $bridge_devname | grep -v grep | awk '{ print $1 }')
+            # start parprouted:
+            parprouted $wlan_devname $bridge_devname
+            ;;
+        stop)
+            # kill parprouted:
+            pkill parprouted
 
-			if [ $create_bridge -eq 1 ]; then
-				# delete the bridge device:
-				ip link delete $bridge_devname
-			fi
+            # kill dnsmasq:
+            kill $(ps ax | grep -e "dnsmasq --conf-file=/dev/null" | grep $bridge_devname | grep -v grep | awk '{ print $1 }')
 
-			# disable internet sharing:
-			iptables-legacy -t nat -D POSTROUTING -o $wlan_devname -j MASQUERADE
-			;;
-		esac
-	fi
+            if [ $create_bridge -eq 1 ]; then
+                # delete the bridge device:
+                ip link delete $bridge_devname
+            fi
+
+            # disable internet sharing:
+            iptables-legacy -t nat -D POSTROUTING -o $wlan_devname -j MASQUERADE
+            ;;
+        esac
+    fi
 }
 
 # Use this function to pass PCI devices that are currently in use by a Linux driver
@@ -302,20 +303,20 @@ wlan_bridge_iptables() {
 # Usage example:
 #       vfio_shared_pci "0000:02:00.0 0000:2a:00.3"
 vfio_shared_pci() {
-	ARGS="$(echo $@ | grep -v start | grep -v stop)"
-	case $1 in start)
-		for i in $ARGS; do
-			PCI_PATH=$(echo $i | sed 's/^/pci_/' | sed 's/:/_/g' | sed 's/\./_/g')
-			virsh nodedev-detach $i
-		done
-		;;
-	stop)
-		for i in $ARGS; do
-			PCI_PATH=$(echo $i | sed 's/^/pci_/' | sed 's/:/_/g' | sed 's/\./_/g')
-			virsh nodedev-reattach $i
-		done
-		;;
-	esac
+    ARGS="$(echo $@ | grep -v start | grep -v stop)"
+    case $1 in start)
+        for i in $ARGS; do
+            PCI_PATH=$(echo $i | sed 's/^/pci_/' | sed 's/:/_/g' | sed 's/\./_/g')
+            virsh nodedev-detach $i
+        done
+        ;;
+    stop)
+        for i in $ARGS; do
+            PCI_PATH=$(echo $i | sed 's/^/pci_/' | sed 's/:/_/g' | sed 's/\./_/g')
+            virsh nodedev-reattach $i
+        done
+        ;;
+    esac
 }
 
 # Use this function to pass PCI devices that are currently in use by a Linux driver
@@ -325,45 +326,47 @@ vfio_shared_pci() {
 # Usage:
 #       vfio_shared_pci "vendor:product vendor:product ..."
 vfio_shared_pci_by_id() {
-	ARGS="$(echo $@ | grep -v start | grep -v stop)"
-	case $1 in start)
-		for i in $ARGS; do
-			vendor=$(echo "$i" | sed 's/:.*//')
-			product=$(echo "$i" | sed 's/.*://')
-			pci_path="$(ls /sys/bus/pci/devices | grep "$(lspci -n | grep -e "$i" | awk '{ print $1 }')")"
-			pci_sys_path="/sys/bus/pci/devices/$pci_path"
-			echo "$vendor $product" > /sys/bus/pci/drivers/vfio-pci/new_id
-			echo "$pci_path" > "/sys/bus/pci/devices/$pci_path/driver/unbind"
-			echo "$pci_path" > /sys/bus/pci/drivers/vfio-pci/bind
-			echo "$vendor $product" > /sys/bus/pci/drivers/vfio-pci/remove_id
-		done
-		;;
-	stop)
-		for i in $ARGS; do
-			pci_path="$(ls /sys/bus/pci/devices | grep "$(lspci -n | grep -e "$i" | awk '{ print $1 }')")"
-			pci_sys_path="/sys/bus/pci/devices/$pci_path"
-			echo "$pci_path" > /sys/bus/pci/drivers/vfio-pci/unbind
-			echo 1 > "$pci_sys_path/remove"
-		done
-		sleep 1
-		echo 1 > /sys/bus/pci/rescan
-		;;
-	esac
+    ARGS="$(echo $@ | grep -v start | grep -v stop)"
+    case $1 in start)
+        for i in $ARGS; do
+            vendor=$(echo "$i" | sed 's/:.*//')
+            product=$(echo "$i" | sed 's/.*://')
+            pci_path="$(ls /sys/bus/pci/devices | grep "$(lspci -n | grep -e "$i" | awk '{ print $1 }')")"
+            pci_sys_path="/sys/bus/pci/devices/$pci_path"
+            echo "$vendor $product" > /sys/bus/pci/drivers/vfio-pci/new_id
+            echo "$pci_path" > "/sys/bus/pci/devices/$pci_path/driver/unbind"
+            echo "$pci_path" > /sys/bus/pci/drivers/vfio-pci/bind
+            echo "$vendor $product" > /sys/bus/pci/drivers/vfio-pci/remove_id
+        done
+        ;;
+    stop)
+        for i in $ARGS; do
+            pci_path="$(ls /sys/bus/pci/devices | grep "$(lspci -n | grep -e "$i" | awk '{ print $1 }')")"
+            pci_sys_path="/sys/bus/pci/devices/$pci_path"
+            echo "$pci_path" > /sys/bus/pci/drivers/vfio-pci/unbind
+            echo 1 > "$pci_sys_path/remove"
+        done
+        sleep 1
+        echo 1 > /sys/bus/pci/rescan
+        ;;
+    esac
 }
 
 # start scream in alsa mode on $bridge_devname:
 scream_audio() {
-	if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep)" == "" ]; then
-		case $1 in start)
-			echo "$(which scream) $scream_args >/dev/null 2>&1 &" > /tmp/_scream_audio_tmp.sh
-			bash /tmp/_scream_audio_tmp.sh
-			;;
-		stop)
-			kill $(ps ax | grep -e "scream $scream_args" | grep -v grep | awk '{ print $1 }')
-			rm -f /tmp/_scream_audio_tmp.sh
-			;;
-		esac
-	fi
+    case $1 in start)
+        if [ "$(ps ax | grep -e "scream $scream_args" | grep -v grep)" == "" ]; then
+            echo "$(which scream) $scream_args >/dev/null 2>&1 &" > /tmp/_scream_audio_tmp.sh
+            bash /tmp/_scream_audio_tmp.sh
+        fi
+        ;;
+    stop)
+        if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
+            kill $(ps ax | grep -e "scream $scream_args" | grep -v grep | awk '{ print $1 }')
+            rm -f /tmp/_scream_audio_tmp.sh
+        fi
+        ;;
+    esac
 }
 
 
