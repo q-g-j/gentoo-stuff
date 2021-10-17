@@ -29,7 +29,8 @@ A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kv
 - passing through the boot GPU (see my [grub config file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/default/grub) for details on how to do this). GPU BIOS ROM is needed (got it via GPU-Z in Win10 before).
 - passing through the onboard USB 3 controller
 - acs override patch needed on my system
-- enabled avic in kvm_amd kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters). Avic will conflict with some hyper-v enlightenments according to [this site](https://www.reddit.com/r/VFIO/comments/fovu39/iommu_avic_in_linux_kernel_56_boosts_pci_device/), so I disabled them.
+- enabled avic in kvm_amd kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters). Avic will conflict with some hyper-v enlightenments according to [this site](https://www.reddit.com/r/VFIO/comments/fovu39/iommu_avic_in_linux_kernel_56_boosts_pci_device/), so I disabled them.<br/>
+Note: the upcoming Linux kernel 5.15 will have patches applied that allow avic to be used together with some common hyper-v enlightenments. Will update on this soon after I tested it. Found [here](https://www.reddit.com/r/VFIO/comments/pn3etv/maxim_levitskys_latest_work_on_apicvavic_allows/).
 - using a custom libvirt [hooks file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) with the following features:<br/>
   * set the cpu governor<br/>
   * enable / disable some kernel optimizations<br/>
