@@ -54,7 +54,7 @@ What it does, is:
 - the same bridge device (e.g. bridge0) assigned to each guests network interface. The bridge will be created if desired.
 - *net-dns/dnsmasq*
 - *net-firewall/parprouted* - not in gentoo portage but I found an old ebuild and fixed it. Get it from my [overlay](https://github.com/q-g-j/qgj-overlay)<br/>
-Update: parprouted needs the *ip* program to be in `/sbin`. On my system I needed to `ln -s /bin/ip /sbin/ip`. I will fix the ebuild soon.
+Note: parprouted needs the *ip* program to be in `/sbin`. On my system I needed to `ln -s /bin/ip /sbin/ip`. Update: fixed the ebuild.
 - if I remember correctly, it was necessary to set *DNSStubListener=no* inside [*/etc/systemd/resolved.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/systemd/resolved.conf) to avoid conflicts between systemd and dnsmasq.
 
 *Instructions:*<br/><br/>
