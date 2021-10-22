@@ -1,4 +1,7 @@
-Kernel config (for sys-kernel/gentoo-sources:5.13.2) tuned for the following system:
+Update: Updated kernel to *sys-kernel/git-sources-5.15_rc5*<br/>
+Left the config on default and didn't apply any patches. The descriptions below are only valid for *sys-kernel/gentoo-sources:5.13.2*:
+
+Kernel config (for *sys-kernel/gentoo-sources:5.13.2*) tuned for the following system:
 
 *Mainboard:* MSI X470 Gaming Plus Max<br/>
 *CPU:* AMD Ryzen 5 3600XT (6 cores / 12 threads in total)<br/>
