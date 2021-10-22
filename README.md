@@ -1,19 +1,17 @@
 A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kvm with GPU passthrough**. In case you find a mistake, something is not working for you or you have got a question, please use the issues tab.
 
 **Gentoo related:**
-- *Kernel:* sys-kernel/gentoo-sources-5.13.2 with patches ([config here](https://github.com/q-g-j/gentoo-stuff/blob/master/boot), [patches here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/portage/patches/sys-kernel/gentoo-sources))<br/>
+- *Kernel:* sys-kernel/git-sources-5.15_rc5 (left the config on default)
 - `sudo eselect profile show` :<br/>
 *default/linux/amd64/17.1/desktop/plasma/systemd*
 - portage configs available in my repo: [*/etc/portage*](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/portage)
 - enabled layman repos:<br/>
 *4nykey*<br/>
 *audio-overlay*<br/>
-*bombo82*<br/>
 [*cockpit*](https://github.com/orumin/cockpit-overlay.git)<br/>
+*dlang*<br/>
 *guru*<br/>
-*holgersson-overlay*<br/>
 [*qgj*](https://github.com/q-g-j/qgj-overlay)<br/>
-*steam-overlay*<br/><br/>
 
 
 **General information about my libvirt VMs:**
@@ -22,15 +20,15 @@ A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kv
 *CPU:* AMD Ryzen 5 3600XT (6 cores / 12 threads in total)<br/>
 *Boot GPU:* MSI Radeon RX 570 Gaming X 4GB (for the VM)<br/>
 *2nd GPU:* AMD Radeon R5 230 (for the host)<br/>
-*libvirt*: v7.5.0<br/>
+*libvirt*: v7.7.0<br/>
 *QEMU*: v6.0.0
-- my current libvirt guest XMLs for Win10 and macOS: [link](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
+- my current libvirt guest XMLs for Win11 and macOS: [link](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
 - passing only 5 cores with 2 threads on each core to the guest with proper CPU pinning (lstopo); No isolating via grub
 - passing through the boot GPU (see my [grub config file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/default/grub) for details on how to do this). GPU BIOS ROM is needed (got it via GPU-Z in Win10 before).
 - passing through the onboard USB 3 controller
-- acs override patch needed on my system
-- enabled avic in kvm_amd kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters). Avic will conflict with some hyper-v enlightenments according to [this site](https://www.reddit.com/r/VFIO/comments/fovu39/iommu_avic_in_linux_kernel_56_boosts_pci_device/), so I disabled them.<br/>
-Note: the upcoming Linux kernel 5.15 will have patches applied that allow avic to be used together with some common hyper-v enlightenments. Will update on this soon after I tested it. Found [here](https://www.reddit.com/r/VFIO/comments/pn3etv/maxim_levitskys_latest_work_on_apicvavic_allows/).
+- enabled avic in kvm_amd kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters)<br/>
+Note: according to [this site](https://www.reddit.com/r/VFIO/comments/pn3etv/maxim_levitskys_latest_work_on_apicvavic_allows/) the new kernel 5.15 has some improvements to the AVIC code.
+Disabling hyper-v enlightenments like vapic, stimer and synic should not be necessary anymore.
 - using a custom libvirt [hooks file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) with the following features:<br/>
   * set the cpu governor<br/>
   * enable / disable some kernel optimizations<br/>
@@ -67,21 +65,21 @@ Note: The VMs MUST use an IP that is within the custom DHCP range (changeable va
 The hooks file creates the bridge device and starts the services on demand. When the last VM is stopped, the bridge will be deleted and the services killed.<br/><br/>
 
 
-**Notes on the Win10 VM:**
-- libvirt XML: [win10.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win10.xml).
-- enabled Message-Signaled Interrupt mode for the HDMI audio PCI interrupt with *MSI mode utility* ([download](https://github.com/q-g-j/gentoo-stuff/blob/master/win10/MSI_util/MSI_util_v3.zip?raw=true)) to get rid of sound cracklings (run as Administrator)
+**Notes on the Win11 VM:**
+- libvirt XML: [win11.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml).
+- enabled Message-Signaled Interrupt mode for the HDMI audio PCI interrupt with *MSI mode utility* ([download](https://github.com/q-g-j/gentoo-stuff/blob/master/win11/MSI_util/MSI_util_v3.zip?raw=true)) to get rid of sound cracklings (run as Administrator)
 - using [Looking Glass](https://looking-glass.io/) (needs IVSHMEM device: [see here](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Using_Looking_Glass_to_stream_guest_screen_to_the_host)) for remote desktop from Linux to Windows
 - using [Scream](https://github.com/duncanthrax/scream) via network for audio in the guest (in alsa mode)
-- added [instructions](https://github.com/q-g-j/gentoo-stuff/tree/master/win10/freerdp) for remote desktop from Windows to Linux using freerdp. Other solutions were too sluggish with my setup.
+- added [instructions](https://github.com/q-g-j/gentoo-stuff/tree/master/win11/freerdp) for remote desktop from Windows to Linux using freerdp. Other solutions were too sluggish with my setup.
 - applied an [acpi table patch](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/portage/patches/app-emulation/qemu-6.0.0/acpi-table.patch) to qemu and added custom smbios labels to the VMs xml. This made it possible for me to play the game *Red Dead Redemption 2* inside my guest without it crashing immediately. Found this tip on [Reddit](https://www.reddit.com/r/VFIO/comments/jy8ri4/a_possible_solution_to_red_dead_redemption_2_not/). You can use generic names for the smbios labels or get them from your own system with:<br/>
 `sudo dmidecode --type 2`<br/>
 `sudo dmidecode --type 4`<br/>
 `sudo dmidecode --type 17`<br/><br/>
 Note: *"sys-apps/dmidecode"* has to be installed if using the following changes to the xml! On gentoo it was pulled in as a dependency of *"libvirt"*, on arch I had to manually install it.
-Here are the necessary changes to the [libvirt xml:](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win10.xml):
+Here are the necessary changes to the [libvirt xml:](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml):
 ```
 domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
-  <name>win10</name>
+  <name>win11</name>
   ....
    <os>
     ....
@@ -133,7 +131,7 @@ From<br/>
 - Need the vendor-reset kernel module enabled (app-emulation/vendor-reset). See [*/etc/modules-load.d/vendor-reset.conf*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/modules-load.d/vendor-reset.conf) and [*/etc/modprobe.d/vendor-reset.conf*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/modprobe.d/vendor-reset.conf) in my repo. Got rid of kernel errors / warnings by adding `pci=noats` to `GRUB_CMDLINE_LINUX` in [*/etc/default/grub*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/default/grub)
 - In order for HDMI audio to work, I had to **enable** *AppleALC.kext* and **disable** *VoodooHDA.kext*.
 - Tested with the game *Middle-earth: Shadow of Mordor* and got stable 50-60 fps. Measured fps with *Quartz Debug*. See [here](https://www.addictivetips.com/mac-os/view-fps-on-macos/) for details. For Catalina I needed to download an older version of *Additional Tools for Xcode*, for example version 12 should work.
-- Remote desktop from Mac OS to Linux: since I already had the freerdp server running on the host, I tried to get xfreerdp running in MacOS but it would not work well - frequent crashes, no true full screen. So I tried it with wine (see above for how to install it) and the Windows version of the FreeRDP client that I uploaded [here](https://github.com/q-g-j/gentoo-stuff/tree/master/win10/freerdp), and it runs surprisingly well! The instructions and parameters from the last link apply to this method as well. Of course start it with `wine64` in front:<br/>
+- Remote desktop from Mac OS to Linux: since I already had the freerdp server running on the host, I tried to get xfreerdp running in MacOS but it would not work well - frequent crashes, no true full screen. So I tried it with wine (see above for how to install it) and the Windows version of the FreeRDP client that I uploaded [here](https://github.com/q-g-j/gentoo-stuff/tree/master/win11/freerdp), and it runs surprisingly well! The instructions and parameters from the last link apply to this method as well. Of course start it with `wine64` in front:<br/>
 `cd $HOME/wfreerdp`<br/>
 `wine64 wfreerdp.exe  /v:182.12.100.1 /u:<linux-username> /p:<linux-password> /f /rfx /floatbar:sticky:off,default:hidden,show:fullscreen`<br/>
 I'm using a simple shortcut app for this (made with *Automator*), that can be put into the Dock. See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/apps) for instructions.

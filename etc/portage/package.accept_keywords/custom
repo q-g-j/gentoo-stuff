@@ -1,109 +1,33 @@
-### games-util/steam-meta
-	*/*::steam-overlay
-	games-util/game-device-udev-rules
-
-app-arch/upx
-
-app-benchmarks/stress-ng
 app-crypt/sirikali
-app-emulation/cockpit-machines::cockpit
-	app-emulation/libvirt-dbus::cockpit
-app-emulation/libguestfs
-	app-emulation/libguestfs-appliance
-	app-misc/hivex
-	<dev-ml/ocaml-gettext-0.4.2
-	dev-ml/ocaml-fileutils
-app-emulation/libvirt
-	dev-python/libvirt-python
-app-emulation/looking-glass::qgj
+app-crypt/swtpm
+	dev-libs/libtpms
+app-editors/vscode
+app-emulation/looking-glass
 app-emulation/snapd
-app-emulation/snapd-glib
+	app-emulation/snapd-glib
 app-emulation/vendor-reset
 app-emulation/virtio-win
+app-emulation/wine-gecko
+app-emulation/wine-mono
 app-emulation/wine-staging
-	app-emulation/wine-mono
-	app-emulation/wine-gecko
-app-emulation/wine-vanilla
-app-misc/appimagelauncher-bin
+app-misc/appimagelauncher-bin::qgj
 
-dev-db/dbeaver-bin
-dev-dotnet/dotnetcore-sdk-bin:6.0 **
-	dev-dotnet/dotnetcore-sdk-bin-common **
-dev-lang/kotlin-bin
-	*/*::spark-overlay
-dev-python/pyinstaller
-dev-python/spyder
-	dev-util/cookiecutter
-	dev-python/inflection
-	dev-python/qstylizer
-	dev-python/spyder-kernels
-	sci-libs/rtree
-dev-qt/qt-creator
-dev-util/msbuild
-	dev-dotnet/msbuild-tasks-api
-	dev-dotnet/msbuild-defaulttasks
-	dev-dotnet/msbuild-roslyn-csc
-	dev-dotnet/buildtools
-	dev-dotnet/newtonsoft-json
-	dev-dotnet/system-reflection-metadata
-	dev-dotnet/system-collections-immutable
-dev-util/perf
-dev-util/pycharm-community
-dev-util/sccache
-dev-vcs/lazygit
+gnome-extra/gnome-software
 
-games-action/ATLauncher
-games-util/lutris
-
-kde-misc/colord-kde
-kde-misc/plasma-redshift-control **
-
-media-gfx/converseen
-media-sound/ardour::4nykey
-	media-libs/libltc::4nykey
-	media-libs/qm-dsp::4nykey
-media-sound/carla::qgj
-	media-libs/pyliblo
-media-sound/jamin
-media-sound/pulseaudio-modules-bt
 media-sound/scream
-media-sound/soundkonverter
-media-video/droidcam
-media-video/handbrake::qgj **
-media-video/pipewire
 
-net-dns/mdns-repeater
-net-im/rambox-bin
-net-im/teams
-net-im/zoom
-net-misc/freerdp
+net-im/rambox-bin::qgj
 net-misc/megasync::4nykey
-	net-misc/meganz-sdk::4nykey
 	dev-libs/breakpad::4nykey
-net-wireless/rtl88x2bu
+	net-misc/meganz-sdk::4nykey
+net-misc/onedrive::qgj
+net-misc/wsdd
+net-wireless/rtl88x2bu::qgj
 
-sys-apps/cockpit::cockpit
-	sys-apps/pcp::cockpit
-sys-apps/flatpak
-	dev-util/ostree
-	sys-apps/xdg-desktop-portal-gtk
-sys-apps/pacman
-	app-crypt/archlinux-keyring
-	sys-apps/pacman-mirrorlist
-	sys-devel/arch-install-scripts
-=sys-apps/systemd-249.2
-sys-block/systemd-swap
-	dev-python/sysv_ipc
-sys-fs/aufs-util
-sys-fs/squashfs-tools-ng
-sys-fs/zfs
-sys-fs/zfs-kmod
-sys-kernel/gentoo-sources:5.12.7
-sys-kernel/gentoo-sources:5.13.2
-sys-process/bpytop
-	 dev-python/psutil
-sys-process/cpu-x
-	sys-libs/libcpuid
 sys-fs/gocryptfs
-
-x11-misc/birdtray
+sys-fs/ntfs3g
+sys-kernel/gentoo-kernel-bin
+	virtual/dist-kernel
+sys-kernel/gentoo-sources
+sys-kernel/git-sources
+sys-process/bpytop

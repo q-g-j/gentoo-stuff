@@ -1,7 +1,7 @@
 <domain xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" type="kvm">
-  <name>win10</name>
+  <name>win11</name>
   <uuid>dfb4bbc3-0b3d-4895-8672-bf9f5453b3b6</uuid>
-  <title>Windows 10 Pro</title>
+  <title>Windows 11 Pro</title>
   <metadata>
     <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
       <libosinfo:os id="http://microsoft.com/win/10"/>
@@ -36,14 +36,19 @@
   </os>
   <features>
     <acpi/>
-    <apic eoi="on"/>
-    <hap state="on"/>
+    <apic/>
     <hyperv>
       <relaxed state="on"/>
-      <spinlocks state="on" retries="8191"/>
+      <vapic state="on"/>
+      <spinlocks state="on" retries="8192"/>
       <vpindex state="on"/>
-      <vendor_id state="on" value="aaaaabbbbbcc"/>
+      <synic state="on"/>
+      <stimer state="on"/>
+      <vendor_id state="on" value="0123756792CD"/>
     </hyperv>
+    <kvm>
+      <hidden state="on"/>
+    </kvm>
     <vmport state="off"/>
     <ioapic driver="kvm"/>
   </features>
@@ -55,7 +60,7 @@
     <feature policy="disable" name="x2apic"/>
   </cpu>
   <clock offset="localtime">
-    <timer name="rtc" tickpolicy="catchup"/>
+    <timer name="rtc" tickpolicy="catchup" track="guest"/>
     <timer name="pit" tickpolicy="discard"/>
     <timer name="hpet" present="no"/>
     <timer name="hypervclock" present="yes"/>
@@ -71,7 +76,7 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type="file" device="disk">
       <driver name="qemu" type="qcow2" discard="unmap"/>
-      <source file="/var/lib/libvirt/images/win10.qcow2"/>
+      <source file="/var/lib/libvirt/images/win11.qcow2"/>
       <target dev="sda" bus="scsi"/>
       <boot order="1"/>
       <address type="drive" controller="0" bus="0" target="0" unit="0"/>
@@ -95,7 +100,7 @@
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
     </controller>
     <controller type="scsi" index="0" model="virtio-scsi">
-      <driver queues="4" iothread="1"/>
+      <driver queues="8" iothread="1"/>
       <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
     </controller>
     <controller type="virtio-serial" index="0">
