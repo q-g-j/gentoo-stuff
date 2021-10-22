@@ -2,6 +2,8 @@ app-crypt/sirikali
 app-crypt/swtpm
 	dev-libs/libtpms
 app-editors/vscode
+app-emulation/cockpit-machines
+	app-emulation/libvirt-dbus::cockpit
 app-emulation/looking-glass
 app-emulation/snapd
 	app-emulation/snapd-glib
@@ -23,6 +25,7 @@ net-misc/onedrive::qgj
 net-misc/wsdd
 net-wireless/rtl88x2bu::qgj
 
+sys-apps/cockpit
 sys-fs/gocryptfs
 sys-fs/ntfs3g
 sys-kernel/git-sources

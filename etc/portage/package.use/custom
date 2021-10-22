@@ -1,5 +1,10 @@
 #app-crypt/swtpm
 	net-libs/gnutls pkcs11 tools
+#app-emulation/cockpit-machines::cockpit
+	app-emulation/libvirt firewalld
+	sys-fs/udisks lvm
+	net-libs/libssh server
+	sys-libs/libblockdev lvm
 app-emulation/libvirt lvm parted
 app-emulation/qemu spice ssh usbredir virgl
 app-emulation/snapd -cgroup-hybrid
