@@ -10,10 +10,10 @@ app-emulation/snapd -cgroup-hybrid
 #app-emulation/wine-staging
 	media-libs/libsdl2 haptic
 app-misc/mc -slang
+#app-portage/pfl
+	sys-apps/util-linux caps
 
 dev-util/kdevelop hex
-
-gnome-extra/gnome-software flatpak
 
 kde-apps/kdecore-meta -webengine
 kde-apps/kdenetwork-meta -bittorrent
@@ -21,7 +21,7 @@ kde-apps/kdenetwork-meta -bittorrent
 #kde-plasma/plasma-desktop
 	dev-qt/qtmultimedia gstreamer
 	net-dns/avahi mdnsresponder-compat
-kde-plasma/discover flatpak snap
+kde-plasma/discover::qgj flatpak snap
 
 media-gfx/xsane gimp
 media-libs/freetype harfbuzz

@@ -12,11 +12,10 @@ app-emulation/wine-mono
 app-emulation/wine-staging
 app-misc/appimagelauncher-bin::qgj
 
-gnome-extra/gnome-software
-
 media-sound/scream
 
 net-im/rambox-bin::qgj
+net-misc/freerdp **
 net-misc/megasync::4nykey
 	dev-libs/breakpad::4nykey
 	net-misc/meganz-sdk::4nykey
@@ -26,8 +25,5 @@ net-wireless/rtl88x2bu::qgj
 
 sys-fs/gocryptfs
 sys-fs/ntfs3g
-sys-kernel/gentoo-kernel-bin
-	virtual/dist-kernel
-sys-kernel/gentoo-sources
 sys-kernel/git-sources
 sys-process/bpytop
