@@ -17,7 +17,6 @@ app-misc/appimagelauncher-bin::qgj
 media-sound/scream
 
 net-im/rambox-bin::qgj
-net-misc/freerdp **
 net-misc/megasync::4nykey
 	dev-libs/breakpad::4nykey
 	net-misc/meganz-sdk::4nykey
@@ -25,7 +24,11 @@ net-misc/onedrive::qgj
 net-misc/wsdd
 net-wireless/rtl88x2bu::qgj
 
-sys-apps/cockpit
+sys-apps/cockpit::cockpit
+sys-apps/pacman::holgersson-overlay
+	app-crypt/archlinux-keyring::holgersson-overlay
+	sys-apps/pacman-mirrorlist::holgersson-overlay
+sys-devel/arch-install-scripts
 sys-fs/gocryptfs
 sys-fs/ntfs3g
 sys-kernel/git-sources

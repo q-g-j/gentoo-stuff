@@ -36,7 +36,7 @@ media-video/pipewire pipewire-alsa
 net-dns/avahi -gtk
 net-misc/freerdp server
 net-misc/megasync::4nykey dolphin
-	net-misc/meganz-sdk::4nykey libuv qt
+	net-misc/meganz-sdk::4nykey inotify libuv mediainfo qt
 net-misc/onedrive dmd-2_092
 #net-print/hplip
 	net-dns/avahi python

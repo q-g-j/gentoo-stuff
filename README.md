@@ -11,6 +11,7 @@ A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kv
 [*cockpit*](https://github.com/orumin/cockpit-overlay.git)<br/>
 *dlang*<br/>
 *guru*<br/>
+*holgersson-overlay*<br/>
 [*qgj*](https://github.com/q-g-j/qgj-overlay)<br/>
 
 
