@@ -10,13 +10,7 @@ ctrl_c() {
 	exit 1
 }
 
-if [ "$(basename -a `readlink -f /usr/src/linux` | grep -e "-rt[0-9]*$")" != "" ]; then
-	KERNEL_VERSION=$(basename -a `readlink -f /usr/src/linux` | sed s/linux-// | sed 's/\([0-9\.]-\)/\1rt-/')
-else
-	KERNEL_VERSION=$(basename -a `readlink -f /usr/src/linux` | sed s/linux-//)
-fi
-
-
+KERNEL_VERSION=$(cat /usr/src/linux/include/config/kernel.release)
 
 usage() {
 	echo "Usage:"
@@ -44,7 +38,7 @@ build_kernel() {
 }
 
 update_dracut() {
-	sudo dracut --host-only -f --fstab /boot/initramfs-$KERNEL_VERSION $KERNEL_VERSION
+	sudo dracut --host-only -f --fstab /boot/initramfs-$KERNEL_VERSION.img $KERNEL_VERSION
 }
 
 update_grub() {
