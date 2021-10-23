@@ -18,6 +18,7 @@ app-misc/mc -slang
 #app-portage/pfl
 	sys-apps/util-linux caps
 
+dev-qt/qt-creator autotools cmake cppcheck git modeling python lsp
 dev-util/kdevelop hex
 
 kde-apps/kdecore-meta -webengine

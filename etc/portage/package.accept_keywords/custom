@@ -14,6 +14,10 @@ app-emulation/wine-mono
 app-emulation/wine-staging
 app-misc/appimagelauncher-bin::qgj
 
+dev-qt/qt-creator
+	dev-qt/qtquicktimeline
+
+media-sound/carla
 media-sound/scream
 
 net-im/rambox-bin::qgj
