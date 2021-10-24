@@ -71,7 +71,6 @@ The hooks file creates the bridge device and starts the services on demand. When
 - enabled Message-Signaled Interrupt mode for the HDMI audio PCI interrupt with *MSI mode utility* ([download](https://github.com/q-g-j/gentoo-stuff/blob/master/win11/MSI_util/MSI_util_v3.zip?raw=true)) to get rid of sound cracklings (run as Administrator)
 - using [Looking Glass](https://looking-glass.io/) (needs IVSHMEM device: [see here](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Using_Looking_Glass_to_stream_guest_screen_to_the_host)) for remote desktop from Linux to Windows
 - using [Scream](https://github.com/duncanthrax/scream) via network for audio in the guest (in alsa mode)
-- added [instructions](https://github.com/q-g-j/gentoo-stuff/tree/master/win11/freerdp) for remote desktop from Windows to Linux using freerdp. Other solutions were too sluggish with my setup.
 - applied an [acpi table patch](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/portage/patches/app-emulation/qemu-6.0.0/acpi-table.patch) to qemu and added custom smbios labels to the VMs xml. This made it possible for me to play the game *Red Dead Redemption 2* inside my guest without it crashing immediately. Found this tip on [Reddit](https://www.reddit.com/r/VFIO/comments/jy8ri4/a_possible_solution_to_red_dead_redemption_2_not/). You can use generic names for the smbios labels or get them from your own system with:<br/>
 `sudo dmidecode --type 2`<br/>
 `sudo dmidecode --type 4`<br/>
@@ -108,7 +107,6 @@ domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
 - Made a few changes to the xml, like adding CPU pinning, enabling hugepages and some other things. As you might know, you need to change this line (google it, I'm not sure about the legal part):<br/>
 `<qemu:arg value='isa-applesmc,osk=GOOGLE'/>`<br/>
 - Modified my libvirt [hooks file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) to support the new guest.
-- Mac OS Catalina installed just fine. Even when using virtio for the hard disk and for the graphics (in spice mode). Update: went back to SATA for the disk cause I couldn't get SSD TRIM working with virtio-blk.
 - When the installation starts you need to go to disk utility first and **erase** the System partition, even if empty. This automatically reformats it to be used for the installation. Close the disk utility and start the installation.
 - Downloaded homebrew and installed wget, xquartz (xorg for MacOS) and wine-staging :<br/>
 In mac OS open a terminal:<br/>
@@ -132,8 +130,4 @@ From<br/>
 - Need the vendor-reset kernel module enabled (app-emulation/vendor-reset). See [*/etc/modules-load.d/vendor-reset.conf*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/modules-load.d/vendor-reset.conf) and [*/etc/modprobe.d/vendor-reset.conf*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/modprobe.d/vendor-reset.conf) in my repo. Got rid of kernel errors / warnings by adding `pci=noats` to `GRUB_CMDLINE_LINUX` in [*/etc/default/grub*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/default/grub)
 - In order for HDMI audio to work, I had to **enable** *AppleALC.kext* and **disable** *VoodooHDA.kext*.
 - Tested with the game *Middle-earth: Shadow of Mordor* and got stable 50-60 fps. Measured fps with *Quartz Debug*. See [here](https://www.addictivetips.com/mac-os/view-fps-on-macos/) for details. For Catalina I needed to download an older version of *Additional Tools for Xcode*, for example version 12 should work.
-- Remote desktop from Mac OS to Linux: since I already had the freerdp server running on the host, I tried to get xfreerdp running in MacOS but it would not work well - frequent crashes, no true full screen. So I tried it with wine (see above for how to install it) and the Windows version of the FreeRDP client that I uploaded [here](https://github.com/q-g-j/gentoo-stuff/tree/master/win11/freerdp), and it runs surprisingly well! The instructions and parameters from the last link apply to this method as well. Of course start it with `wine64` in front:<br/>
-`cd $HOME/wfreerdp`<br/>
-`wine64 wfreerdp.exe  /v:182.12.100.1 /u:<linux-username> /p:<linux-password> /f /rfx /floatbar:sticky:off,default:hidden,show:fullscreen`<br/>
-I'm using a simple shortcut app for this (made with *Automator*), that can be put into the Dock. See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/apps) for instructions.
 - to make input via evdev work I needed an additional driver: *VoodooPS2Controller.kext*. Already enabled in my [*OpenCore.qcow2*](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore).
