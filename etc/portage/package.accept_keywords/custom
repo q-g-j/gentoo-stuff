@@ -2,7 +2,7 @@ app-crypt/sirikali
 app-crypt/swtpm
 	dev-libs/libtpms
 app-editors/vscode
-app-emulation/cockpit-machines
+app-emulation/cockpit-machines::cockpit
 	app-emulation/libvirt-dbus::cockpit
 app-emulation/looking-glass
 app-emulation/snapd
@@ -14,6 +14,8 @@ app-emulation/wine-mono
 app-emulation/wine-staging
 app-misc/appimagelauncher-bin::qgj
 
+dev-dotnet/dotnet-sdk-bin
+	virtual/dotnet-sdk
 dev-qt/qt-creator
 	dev-qt/qtquicktimeline
 
