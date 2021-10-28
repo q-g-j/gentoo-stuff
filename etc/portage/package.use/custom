@@ -18,6 +18,7 @@ app-misc/mc -slang
 #app-portage/pfl
 	sys-apps/util-linux caps
 
+dev-lang/python tk
 dev-qt/qt-creator autotools cmake cppcheck git modeling python lsp
 dev-util/kdevelop hex
 
@@ -35,10 +36,11 @@ media-video/pipewire pipewire-alsa
 	media-sound/pulseaudio -alsa-plugin
 
 net-dns/avahi -gtk
-net-misc/freerdp server
+net-misc/freerdp gstreamer server
 net-misc/megasync::4nykey dolphin
 	net-misc/meganz-sdk::4nykey inotify libuv mediainfo qt
 net-misc/onedrive dmd-2_092
+net-misc/tigervnc dri3 server
 #net-print/hplip
 	net-dns/avahi python
 

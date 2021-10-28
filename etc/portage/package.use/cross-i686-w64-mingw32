@@ -1,0 +1,3 @@
+cross-i686-w64-mingw32/mingw64-runtime libraries idl tools -selinux -multilib
+cross-i686-w64-mingw32/binutils -multilib
+cross-i686-w64-mingw32/gcc -hardened -sanitize -vtv -pie nopie -selinux -boundschecking -d -gcj -gtk -libffi -mudflap -objc -objc++ -objc-gc -multilib

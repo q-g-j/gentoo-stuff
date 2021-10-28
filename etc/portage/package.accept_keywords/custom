@@ -13,6 +13,7 @@ app-emulation/wine-gecko
 app-emulation/wine-mono
 app-emulation/wine-staging
 app-misc/appimagelauncher-bin::qgj
+app-portage/eix
 
 dev-dotnet/dotnet-sdk-bin
 	virtual/dotnet-sdk
