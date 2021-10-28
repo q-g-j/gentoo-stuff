@@ -375,7 +375,7 @@ scream_audio() {
 #############
 
 case $1 in
-	win10)
+	win11)
 		if [ "$2" == "prepare" ]; then
 			governor_set f
 			kernel_optimizations start
