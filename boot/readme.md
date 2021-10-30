@@ -1,4 +1,4 @@
-Update: Updated kernel to *sys-kernel/git-sources-5.15_rc6*<br/>
+Update: Updated kernel to *sys-kernel/git-sources-5.15_rc7*<br/>
 The descriptions below are only valid for *sys-kernel/gentoo-sources:5.13.2*:
 
 Kernel config (for *sys-kernel/gentoo-sources:5.13.2*) tuned for the following system:
