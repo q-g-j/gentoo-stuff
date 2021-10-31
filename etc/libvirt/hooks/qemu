@@ -117,13 +117,13 @@ hugepages() {
             echo "SHMMAX=$SHMMAX_OLD" > /tmp/hugepages_backup.tmp
             echo "SHMALL=$SHMALL_OLD" >> /tmp/hugepages_backup.tmp
             HUGEPAGE_SIZE_DEMANDED_MB=$(($hugepages_gb*1024))
+            HUGEPAGE_SIZE_KB=`grep Hugepagesize /proc/meminfo | awk '{print $2}'`
+            HUGEPAGE_SIZE_MB=$((HUGEPAGE_SIZE_KB/1024))
+            HUGEPAGES_NEEDED_BASE=$(((HUGEPAGE_SIZE_DEMANDED_MB+HUGEPAGE_SIZE_MB-1)/HUGEPAGE_SIZE_MB))
+            HUGEPAGES_NEEDED=$(($HUGEPAGES_NEEDED_BASE))
             while [ "$(($(cat /proc/meminfo  | grep Huge | grep Total | awk '{print $2}') * 2))" != "$HUGEPAGE_SIZE_DEMANDED_MB" ]; do
-                HUGEPAGE_SIZE_KB=`grep Hugepagesize /proc/meminfo | awk '{print $2}'`
-                HUGEPAGE_SIZE_MB=$((HUGEPAGE_SIZE_KB/1024))
-                HUGEPAGES_NEEDED_BASE=$(((HUGEPAGE_SIZE_DEMANDED_MB+HUGEPAGE_SIZE_MB-1)/HUGEPAGE_SIZE_MB))
-                HUGEPAGES_NEEDED=$(($HUGEPAGES_NEEDED_BASE))
                 echo $HUGEPAGES_NEEDED >/proc/sys/vm/nr_hugepages
-                sleep 1
+                sleep 0.2
             done
             HUGEPAGES_ALLOCATED=`cat /proc/sys/vm/nr_hugepages`
             SHMMAX_NEEDED=$((HUGEPAGES_ALLOCATED*HUGEPAGE_SIZE_KB*1024))
