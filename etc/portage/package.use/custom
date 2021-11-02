@@ -32,6 +32,8 @@ kde-plasma/discover::qgj flatpak snap
 
 media-gfx/xsane gimp
 media-libs/freetype harfbuzz
+#media-video/droidcam [gtk]
+	dev-libs/libdbusmenu gtk3
 media-video/pipewire pipewire-alsa
 	media-sound/pulseaudio -alsa-plugin
 
@@ -44,4 +46,5 @@ net-misc/tigervnc dri3 server
 #net-print/hplip
 	net-dns/avahi python
 
+sys-kernel/gentoo-sources experimental
 sys-libs/ncurses -gpm

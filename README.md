@@ -1,7 +1,7 @@
 A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kvm with GPU passthrough**. In case you find a mistake, something is not working for you or you have got a question, please use the issues tab.
 
 **Gentoo related:**
-- *Kernel:* sys-kernel/git-sources-5.15_rc7
+- *Kernel:* sys-kernel/gentoo-sources:5.15.0
 - `sudo eselect profile show` :<br/>
 *default/linux/amd64/17.1/desktop/plasma/systemd*
 - portage configs available in my repo: [*/etc/portage*](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/portage)
@@ -54,9 +54,6 @@ What it does, is:
 - the same bridge device (e.g. bridge0) assigned to each guests network interface. The bridge will be created if desired.
 - *net-dns/dnsmasq*
 - *net-firewall/parprouted* - not in gentoo portage but I found an old ebuild and fixed it. Get it from my [overlay](https://github.com/q-g-j/qgj-overlay)<br/>
-Note: parprouted needs the *ip* program to be in `/sbin`. On my system I needed to `ln -s /bin/ip /sbin/ip`. Update: fixed the ebuild. Get it from my 
-[*overlay*](https://github.com/q-g-j/qgj-overlay).<br/>
-- if I remember correctly, it was necessary to set *DNSStubListener=no* inside [*/etc/systemd/resolved.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/systemd/resolved.conf) to avoid conflicts between systemd and dnsmasq.
 
 *Instructions:*<br/><br/>
 Look into the [hooks file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) and change the necessary variables at the top of the file. At the bottom add *"wlan_bridge start"* and *"wlan_bridge stop"* in the *"prepare"* and *"stopped"* sections of your VMs.<br/>
