@@ -41,7 +41,7 @@ net-dns/avahi -gtk
 net-misc/freerdp gstreamer server
 net-misc/megasync::4nykey dolphin
 	net-misc/meganz-sdk::4nykey inotify libuv mediainfo qt
-net-misc/onedrive dmd-2_092
+net-misc/onedrive dmd-2_096
 net-misc/tigervnc dri3 server
 #net-print/hplip
 	net-dns/avahi python

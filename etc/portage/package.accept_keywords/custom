@@ -28,7 +28,7 @@ net-im/rambox-bin::qgj
 net-misc/megasync::4nykey
 	dev-libs/breakpad::4nykey
 	net-misc/meganz-sdk::4nykey
-net-misc/onedrive::qgj
+net-misc/onedrive::dlang
 net-misc/wsdd
 net-wireless/rtl88x2bu::qgj
 
