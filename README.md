@@ -12,7 +12,7 @@ A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kv
 *dlang*<br/>
 *guru*<br/>
 *holgersson-overlay*<br/>
-[*qgj*](https://github.com/q-g-j/qgj-overlay)<br/>
+[*qgj*](https://github.com/q-g-j/qgj-overlay)<br/><br/>
 
 
 **General information about my libvirt VMs:**
@@ -38,7 +38,6 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
   * start / stop scream audio<br/>
   * use one or more PCI devices alternately in the host and in the guest (unbind from driver on vm start / rescan PCI bus on vm shutdown)<br/><br/>
 
-
 **WLAN bridging** (libvirt [hooks](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) function *"wlan_bridge*"):<br/><br/>
 *Description:*<br/><br/>
 The purpose of the function is to create a WLAN bridge, which shares the same subnet with the host.<br/>
@@ -61,7 +60,6 @@ For mdns multicasting to work, you can just uncomment the line *"enable-reflecto
 Now all guests, the host and devices connected to the hosts router will be able to communicate with each other (ping, [SMB](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/samba/smb.conf), printing via Bonjour, ...) and have internet. The IPs will be assigned via DHCP. For proper LAN hostname detection in Windows Explorer I installed *net-misc/wsdd* (from *guru* overlay) - activate with `systemctl enable --now wsdd`.<br/>
 Note: The VMs MUST use an IP that is within the custom DHCP range (changeable variable inside the hooks file) if using the new function *"wlan_bridge"* due to the static routing table.<br/>
 The hooks file creates the bridge device and starts the services on demand. When the last VM is stopped, the bridge will be deleted and the services killed.<br/><br/>
-
 
 **Scream Audio via ALSA:**<br/><br/>
 I chose to run scream audio in network mode so no 2nd IVSHMEM device is needed.<br/>
@@ -126,7 +124,7 @@ You can now use host-passthrough as well as the topoext feature to pass cores an
 `<qemu:arg value='Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+pcid,+ssse3,+sse4.2,+popcnt,+avx,+aes,+xsave,+xsaveopt,-x2apic,check'/>`<br/>
 From<br/>
 `<qemu:commandline>`<br/>
-- Update: my old USB sound card (Behringer UCA-222) is working perfectly - though NOT via USB passthrough (LOTS of crackling), but when it's connected to the passed USB3 PCI controller
+- Update: my old USB sound card (Behringer UCA-222) is working perfectly - though NOT via USB passthrough (LOTS of crackling), but when it's connected to the passed USB3 PCI controller<br/><br/>
 
 **macOS VM with GPU passthrough:**
 - libvirt XML: [macOS-gpu.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS-gpu.xml).
