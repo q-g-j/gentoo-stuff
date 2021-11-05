@@ -61,12 +61,6 @@ Now all guests, the host and devices connected to the hosts router will be able 
 Note: The VMs MUST use an IP that is within the custom DHCP range (changeable variable inside the hooks file) if using the new function *"wlan_bridge"* due to the static routing table.<br/>
 The hooks file creates the bridge device and starts the services on demand. When the last VM is stopped, the bridge will be deleted and the services killed.
 
-### Scream Audio via ALSA:
-I chose to run scream audio in network mode so no 2nd IVSHMEM device is needed.<br/>
-To not rely on a running pulseaudio session, scream uses ALSA in my system. To have no ALSA program block the sound card, I adjusted `/etc/asound.conf` to make the [dmix](https://alsa.opensrc.org/Dmix) and [dsnoop](https://alsa.opensrc.org/Dsnoop) plugins from ALSA the default devices for output and input and use these explicitly for pipewire (and its pulseaudio implementation).<br/>
-- */etc/asound.conf*: look [here](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/asound.conf) for an example<br/>
-- */etc/pipewire/pipewire.conf*: look near the bottom of [this file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/pipewire/pipewire.conf) inside the `context.objects = [ ... ]` section. There, inside `{   factory = adapter ... }`, you can specify, which alsa devices pipewire should use (one for output, one for input).
-
 ## Notes on the Win11 VM:
 - libvirt XML: [win11.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml).
 - enabled Message-Signaled Interrupt mode for the HDMI audio PCI interrupt with *MSI mode utility* ([download](https://github.com/q-g-j/gentoo-stuff/blob/master/win11/MSI_util/MSI_util_v3.zip?raw=true)) to get rid of sound cracklings (run as Administrator)
@@ -97,6 +91,12 @@ domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   </qemu:commandline>
 </domain>
 ```
+
+### Scream Audio via ALSA:
+I chose to run scream audio in network mode so no 2nd IVSHMEM device is needed.<br/>
+To not rely on a running pulseaudio session, scream uses ALSA in my system. To have no ALSA program block the sound card, I adjusted `/etc/asound.conf` to make the [dmix](https://alsa.opensrc.org/Dmix) and [dsnoop](https://alsa.opensrc.org/Dsnoop) plugins from ALSA the default devices for output and input and use these explicitly for pipewire (and its pulseaudio implementation).<br/>
+- */etc/asound.conf*: look [here](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/asound.conf) for an example<br/>
+- */etc/pipewire/pipewire.conf*: look near the bottom of [this file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/pipewire/pipewire.conf) inside the `context.objects = [ ... ]` section. There, inside `{   factory = adapter ... }`, you can specify, which alsa devices pipewire should use (one for output, one for input).
 
 ## Notes on the Mac OS VM:
 - libvirt XMLs: [macOS-spice.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS-spice.xml) and [macOS-gpu.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS-gpu.xml)
