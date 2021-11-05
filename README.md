@@ -2,7 +2,7 @@ A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kv
 
 **Gentoo related:**
 - *Kernel:* sys-kernel/gentoo-sources:5.15.0
-- `sudo eselect profile show` :<br/>
+- `eselect profile show` :<br/>
 *default/linux/amd64/17.1/desktop/plasma/systemd*
 - portage configs available in my repo: [*/etc/portage*](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/portage)
 - enabled layman repos:<br/>
@@ -47,7 +47,7 @@ What it does, is:
 2. starting *"dnsmasq"* which uses DHCP with a custom IP range
 3. creating a new table via "ip rule add" and adding all possible IPs from the DHCP IP range to it
 4. routing all these IPs through the hosts gateway (actually the dnsmasq server). You can print the rules with:<br/>`ip rule | grep --color=never 99; echo; echo Table 99:; ip route show table 99`
-5. finally starting "parprouted". This is needed, because it will "join" the involved interfaces (wlan0 and bridge0) to one address space (the hosts subnet)
+5. finally starting "parprouted". This program "joins" the involved interfaces (wlan0 and bridge0) to one address space (the hosts subnet)
 
 *Requirements:*
 - `net.ipv4.ip_forward = 1` in */etc/sysctl.conf*
@@ -97,7 +97,7 @@ domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
 
 **Notes on the Mac OS VM:**
 - libvirt XMLs: [macOS-spice.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS-spice.xml) and [macOS-gpu.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS-gpu.xml)
-- Update: just upgraded from macOS Catalina to Big Sur 11.4 and it seems to run just the same as before. The kexts are still loading fine. Now even network with *virtio-net* is working.
+- Update: just upgraded from macOS Catalina to Big Sur and it seems to run just the same as before. The kexts are still loading fine. Now even network with *virtio-net* is working.
 - Used *macOS-libvirt-Catalina.xml*, *BaseImage.img* (via *fetch-macOS-v2.py*), *OVMF_CODE.fd* and *OVMF_VARS-1024x768.fd* from [this site](https://github.com/kholia/OSX-KVM).
 - Installed with spice graphics and switched to GPU passthrough later.
 - Uploaded my own **OpenCore.qcow2**. Created the config.plist according to [this site](https://dortania.github.io/OpenCore-Install-Guide/). See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore) for download and description. Can be used for installation too, just tested it (you will need to set the CPU to host-passthrough). This is only meant to be used with AMD Zen processors (e.g. Ryzen)! Propably not working for Intel, but cannot test.

@@ -53,17 +53,17 @@ usage:
 
 To extract / decrypt:
     - tar commands (example for zstd):
-        tar xp -I zstd --xattrs-include='*.*' --numeric-owner --same-owner -f "backup.tar.zst"
+        tar xp -I zstd --xattrs-include='*.*' --numeric-owner -f "backup.tar.zst"
     - tar commands (example for bzip2):
-        tar xjp --xattrs-include='*.*' --numeric-owner --same-owner -f "backup.tar.bz2"
+        tar xjp --xattrs-include='*.*' --numeric-owner -f "backup.tar.bz2"
     - tar commands with encryption (example for zst):
-        gpg -d "backup.tar.zst.gpg" | tar xp -I zstd --xattrs-include='*.*' --numeric-owner --same-owner -f -
+        gpg -d "backup.tar.zst.gpg" | tar xp -I zstd --xattrs-include='*.*' --numeric-owner -f -
     - tar commands with encryption (example for bzip2):
-        gpg -d "backup.tar.bz2.gpg" | tar xjp --xattrs-include='*.*' --numeric-owner --same-owner -f -
+        gpg -d "backup.tar.bz2.gpg" | tar xjp --xattrs-include='*.*' --numeric-owner -f -
     - tar commands - multiple archives at once (example for zstd):
-        for i in *.zst; do sudo tar xpf "\$i" -I zstd --xattrs-include='*.*' --numeric-owner --same-owner; done
+        for i in *.zst; do sudo tar xpf "\$i" -I zstd --xattrs-include='*.*' --numeric-owner; done
     - tar commands with encryption - multiple archives at once (example for zstd):
-        for i in *.zst.gpg; do gpg -d "\$i" | tar xp -I zstd --xattrs-include='*.*' --numeric-owner --same-owner -f -; done
+        for i in *.zst.gpg; do gpg -d "\$i" | tar xp -I zstd --xattrs-include='*.*' --numeric-owner -f -; done
 EOF
 }
 
