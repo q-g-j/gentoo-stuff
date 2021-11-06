@@ -1,0 +1,17 @@
+#!/bin/bash
+
+wait_for_monitor() {
+        rm /var/log/Xorg.0.log
+        while true; do
+                if [ "$(cat /var/log/Xorg.0.log | grep "Output HDMI-0 connected")" == "" ]; then
+		        systemctl restart sddm > /dev/null 2>&1
+                else
+                        break
+                fi
+		sleep 0.3
+        done
+}
+
+wait_for_monitor > /dev/null 2>&1 &
+
+exit 0
