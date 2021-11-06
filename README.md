@@ -22,7 +22,7 @@ A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kv
 *Boot GPU:* MSI Radeon RX 570 Gaming X 4GB (for the VM)<br/>
 *2nd GPU:* AMD Radeon R5 230 (for the host)<br/>
 *libvirt*: v7.7.0<br/>
-*QEMU*: v6.0.0
+*QEMU*: v6.0.0<br/>
 - my current libvirt guest XMLs for Win11 and macOS: [link](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
 - passing only 5 cores with 2 threads on each core to the guest with proper CPU pinning (lstopo); No isolating via grub
 - passing through the boot GPU (see my [grub config file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/default/grub) for details on how to do this). GPU BIOS ROM is needed (got it via GPU-Z in Win10 before).
@@ -37,6 +37,10 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
   * enable / disable WLAN bridging<br/>
   * start / stop scream audio<br/>
   * use one or more PCI devices alternately in the host and in the guest (unbind from driver on vm start / rescan PCI bus on vm shutdown)
+
+#### lstopo (from sys-apps/hwloc):
+<img src="https://github.com/q-g-j/gentoo-stuff/raw/master/lstopo.svg" width="600">
+
 
 ### WLAN bridging *(libvirt [hooks](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) function *"wlan_bridge*"):*
 #### *Description:*
