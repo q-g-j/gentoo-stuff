@@ -70,7 +70,8 @@ The hooks file creates the bridge device and starts the services on demand. When
 - Windows 11 now needs TPM 2.0 enabled. This can be emulated: install *app-crypt/swtpm* and add these lines to the xml (in "devices"):<br/>
 `<tpm model="tpm-tis">`<br/>
 `<backend type="emulator" version="2.0"/>`<br/>
-`</tpm>`
+`</tpm>`<br/>
+Also change `OVMF_CODE.fd` to `OVMF_CODE.secboot.fd`.
 - enabled Message-Signaled Interrupt mode for the HDMI audio PCI interrupt with *MSI mode utility* ([download](https://github.com/q-g-j/gentoo-stuff/blob/master/win11/MSI_util/MSI_util_v3.zip?raw=true)) to get rid of sound cracklings (run as Administrator)
 - using [Looking Glass](https://looking-glass.io/) (needs IVSHMEM device: [see here](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Using_Looking_Glass_to_stream_guest_screen_to_the_host)) for remote desktop from Linux to Windows
 - using [Scream](https://github.com/duncanthrax/scream) via network for audio in the guest (in alsa mode)
