@@ -31,7 +31,7 @@ dhcp_range_end="192.168.100.220"        # (use only these addresses, even if cho
 wlan_gateway="192.168.100.1"            # your hosts WLAN routers IP
 forward_hostnames="
 192.168.100.1    fritz.box
-192.168.100.100  gentoo
+192.168.100.201  gentoo
 192.168.100.101  osmc
 "
 
