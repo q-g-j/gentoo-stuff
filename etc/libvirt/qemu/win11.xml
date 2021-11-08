@@ -1,8 +1,8 @@
 <domain xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" type="kvm">
   <name>win11</name>
-  <uuid>dfb4bbc3-0b3d-4895-8672-bf9f5453b3b6</uuid>
+  <uuid>2372758b-e69c-415e-b70f-0d3a68fbf126</uuid>
   <title>Windows 11 Pro</title>
-  <metadata>
+ <metadata>
     <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
       <libosinfo:os id="http://microsoft.com/win/10"/>
     </libosinfo:libosinfo>
@@ -11,9 +11,10 @@
   <currentMemory unit="KiB">16777216</currentMemory>
   <memoryBacking>
     <hugepages/>
+    <nosharepages/>
+    <locked/>
   </memoryBacking>
-  <vcpu placement="static">10</vcpu>
-  <iothreads>1</iothreads>
+  <vcpu placement="static">12</vcpu>
   <cputune>
     <vcpupin vcpu="0" cpuset="0"/>
     <vcpupin vcpu="1" cpuset="6"/>
@@ -25,13 +26,13 @@
     <vcpupin vcpu="7" cpuset="9"/>
     <vcpupin vcpu="8" cpuset="4"/>
     <vcpupin vcpu="9" cpuset="10"/>
-    <emulatorpin cpuset="5,11"/>
-    <iothreadpin iothread="1" cpuset="5,11"/>
+    <vcpupin vcpu="10" cpuset="5"/>
+    <vcpupin vcpu="11" cpuset="11"/>
   </cputune>
   <os>
     <type arch="x86_64" machine="pc-q35-6.0">hvm</type>
     <loader readonly="yes" type="pflash">/usr/share/edk2-ovmf/OVMF_CODE.secboot.fd</loader>
-    <nvram>/usr/share/edk2-ovmf/OVMF_VARS.fd</nvram>
+    <nvram>/usr/share/edk2-ovmf/win11-games_VARS.fd</nvram>
     <smbios mode="host"/>
   </os>
   <features>
@@ -44,7 +45,7 @@
       <vpindex state="on"/>
       <synic state="on"/>
       <stimer state="on"/>
-      <vendor_id state="on" value="0123756792CD"/>
+      <vendor_id state="on" value="0123456789AB"/>
     </hyperv>
     <kvm>
       <hidden state="on"/>
@@ -53,7 +54,7 @@
     <ioapic driver="kvm"/>
   </features>
   <cpu mode="host-passthrough" check="none" migratable="off">
-    <topology sockets="1" dies="1" cores="5" threads="2"/>
+    <topology sockets="1" dies="1" cores="6" threads="2"/>
     <cache mode="passthrough"/>
     <feature policy="require" name="invtsc"/>
     <feature policy="require" name="topoext"/>
@@ -76,14 +77,14 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type="file" device="disk">
       <driver name="qemu" type="qcow2" discard="unmap"/>
-      <source file="/var/lib/libvirt/images/win11.qcow2"/>
+      <source file="/mnt/gentoo/var/lib/libvirt/images/win11.qcow2"/>
       <target dev="sda" bus="scsi"/>
       <boot order="1"/>
       <address type="drive" controller="0" bus="0" target="0" unit="0"/>
     </disk>
     <disk type="block" device="disk">
       <driver name="qemu" type="raw" cache="none" io="native" discard="unmap"/>
-      <source dev="/dev/vg-win/games"/>
+      <source dev="/dev/vg1/games"/>
       <target dev="sdb" bus="scsi"/>
       <address type="drive" controller="0" bus="0" target="0" unit="1"/>
     </disk>
@@ -93,18 +94,14 @@
       <readonly/>
       <address type="drive" controller="0" bus="0" target="0" unit="2"/>
     </disk>
-    <controller type="usb" index="0" model="qemu-xhci" ports="15">
-      <address type="pci" domain="0x0000" bus="0x03" slot="0x00" function="0x0"/>
+    <controller type="scsi" index="0" model="virtio-scsi">
+      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
+    </controller>
+    <controller type="usb" index="0" model="qemu-xhci">
+      <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
     </controller>
     <controller type="sata" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
-    </controller>
-    <controller type="scsi" index="0" model="virtio-scsi">
-      <driver queues="8" iothread="1"/>
-      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
-    </controller>
-    <controller type="virtio-serial" index="0">
-      <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
     </controller>
     <controller type="pci" index="0" model="pcie-root"/>
     <controller type="pci" index="1" model="pcie-root-port">
@@ -142,30 +139,33 @@
       <target chassis="7" port="0xe"/>
       <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x6"/>
     </controller>
-    <controller type="pci" index="8" model="pcie-root-port">
-      <model name="pcie-root-port"/>
-      <target chassis="8" port="0xf"/>
-      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x7"/>
+    <controller type="pci" index="8" model="pcie-to-pci-bridge">
+      <model name="pcie-pci-bridge"/>
+      <address type="pci" domain="0x0000" bus="0x02" slot="0x00" function="0x0"/>
     </controller>
     <controller type="pci" index="9" model="pcie-root-port">
       <model name="pcie-root-port"/>
-      <target chassis="9" port="0x10"/>
-      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x0" multifunction="on"/>
+      <target chassis="9" port="0xf"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x7"/>
     </controller>
-    <controller type="pci" index="10" model="pcie-to-pci-bridge">
-      <model name="pcie-pci-bridge"/>
-      <address type="pci" domain="0x0000" bus="0x08" slot="0x00" function="0x0"/>
+    <controller type="pci" index="10" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="10" port="0x10"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x0" multifunction="on"/>
     </controller>
     <controller type="pci" index="11" model="pcie-root-port">
       <model name="pcie-root-port"/>
       <target chassis="11" port="0x11"/>
       <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x1"/>
     </controller>
+    <controller type="virtio-serial" index="0">
+      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
+    </controller>
     <interface type="bridge">
-      <mac address="52:54:00:99:2b:82"/>
-      <source bridge="bridge0"/>
+      <mac address="3e:df:11:2b:a8:11"/>
+      <source bridge="wlanbridge"/>
       <model type="virtio"/>
-      <address type="pci" domain="0x0000" bus="0x02" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x03" slot="0x00" function="0x0"/>
     </interface>
     <channel type="unix">
       <target type="virtio" name="org.qemu.guest_agent.0"/>
@@ -178,10 +178,10 @@
       <source dev="/dev/input/by-id/usb-Logitech_USB_Receiver-if02-event-mouse"/>
     </input>
     <input type="mouse" bus="virtio">
-      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x09" slot="0x00" function="0x0"/>
     </input>
     <input type="keyboard" bus="virtio">
-      <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x0a" slot="0x00" function="0x0"/>
     </input>
     <input type="mouse" bus="ps2"/>
     <input type="keyboard" bus="ps2"/>
@@ -205,13 +205,20 @@
       <source>
         <address domain="0x0000" bus="0x2a" slot="0x00" function="0x3"/>
       </source>
-      <address type="pci" domain="0x0000" bus="0x09" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
+    </hostdev>
+    <hostdev mode="subsystem" type="usb" managed="yes">
+      <source>
+        <vendor id="0x0a12"/>
+        <product id="0x0001"/>
+      </source>
+      <address type="usb" bus="0" port="1"/>
     </hostdev>
     <memballoon model="none"/>
     <shmem name="looking-glass">
       <model type="ivshmem-plain"/>
       <size unit="M">32</size>
-      <address type="pci" domain="0x0000" bus="0x0a" slot="0x01" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x08" slot="0x01" function="0x0"/>
     </shmem>
   </devices>
   <qemu:commandline>
