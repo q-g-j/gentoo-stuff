@@ -30,7 +30,6 @@
     <emulatorpin cpuset='5-11'/>
     <iothreadpin iothread='1' cpuset='5-11'/>
   </cputune>
-
   <os>
     <type arch="x86_64" machine="pc-q35-6.0">hvm</type>
     <loader readonly="yes" type="pflash">/usr/share/edk2-ovmf/OVMF_CODE.secboot.fd</loader>
