@@ -106,7 +106,7 @@ To not rely on a running pulseaudio session, scream uses ALSA in my system. To h
 - */etc/pipewire/pipewire.conf*: look near the bottom of [this file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/pipewire/pipewire.conf) inside the `context.objects = [ ... ]` section. There, inside `{   factory = adapter ... }`, you can specify, which alsa devices pipewire should use (one adapter for output, one for input).
 
 ## Notes on the Mac OS VM:
-- libvirt XMLs: [macOS-spice.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS-spice.xml) and [macOS-gpu.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS-gpu.xml)
+- libvirt XML: [macOS.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS.xml)
 - Update: just upgraded from macOS Catalina to Big Sur and it seems to run just the same as before. The kexts are still loading fine. Now even network with *virtio-net* is working.
 - Used *macOS-libvirt-Catalina.xml*, *BaseImage.img* (via *fetch-macOS-v2.py*), *OVMF_CODE.fd* and *OVMF_VARS-1024x768.fd* from [this site](https://github.com/kholia/OSX-KVM).
 - Installed with spice graphics and switched to GPU passthrough later.

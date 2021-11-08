@@ -19,7 +19,7 @@
 #########################
 
 # CPUs that are passed to the guests:
-cpus="0 1 2 3 4 6 7 8 9 10"
+cpus="0 1 2 3 4 5 6 7 8 9 10 11"
 
 # WLAN bridging (used by "wlan_bridge start|stop" and "wlan_bridge_iptables start|stop")
 wlan_devname="wlan0"
@@ -392,7 +392,7 @@ case $1 in
 			scream_audio stop
 		fi
 		;;
-	macOS-gpu)
+	macOS)
 		if [ "$2" == "prepare" ]; then
 			governor_set f
 			kernel_optimizations start
@@ -402,20 +402,6 @@ case $1 in
 		fi
 		if [ "$2" == "stopped" ]; then
 			vfio_shared_pci stop "0000:2a:00.3"
-			hugepages stop
-			kernel_optimizations stop
-			governor_set s
-			wlan_bridge stop
-		fi
-		;;
-	macOS-spice)
-		if [ "$2" == "prepare" ]; then
-			governor_set f
-			kernel_optimizations start
-			hugepages start
-			wlan_bridge start
-		fi
-		if [ "$2" == "stopped" ]; then
 			hugepages stop
 			kernel_optimizations stop
 			governor_set s
