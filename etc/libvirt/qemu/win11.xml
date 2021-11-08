@@ -14,21 +14,23 @@
     <nosharepages/>
     <locked/>
   </memoryBacking>
-  <vcpu placement="static">12</vcpu>
+  <vcpu placement='static'>10</vcpu>
+  <iothreads>1</iothreads>
   <cputune>
-    <vcpupin vcpu="0" cpuset="0"/>
-    <vcpupin vcpu="1" cpuset="6"/>
-    <vcpupin vcpu="2" cpuset="1"/>
-    <vcpupin vcpu="3" cpuset="7"/>
-    <vcpupin vcpu="4" cpuset="2"/>
-    <vcpupin vcpu="5" cpuset="8"/>
-    <vcpupin vcpu="6" cpuset="3"/>
-    <vcpupin vcpu="7" cpuset="9"/>
-    <vcpupin vcpu="8" cpuset="4"/>
-    <vcpupin vcpu="9" cpuset="10"/>
-    <vcpupin vcpu="10" cpuset="5"/>
-    <vcpupin vcpu="11" cpuset="11"/>
+    <vcpupin vcpu='0' cpuset='0'/>
+    <vcpupin vcpu='1' cpuset='6'/>
+    <vcpupin vcpu='2' cpuset='1'/>
+    <vcpupin vcpu='3' cpuset='7'/>
+    <vcpupin vcpu='4' cpuset='2'/>
+    <vcpupin vcpu='5' cpuset='8'/>
+    <vcpupin vcpu='6' cpuset='3'/>
+    <vcpupin vcpu='7' cpuset='9'/>
+    <vcpupin vcpu='8' cpuset='4'/>
+    <vcpupin vcpu='9' cpuset='10'/>
+    <emulatorpin cpuset='5-11'/>
+    <iothreadpin iothread='1' cpuset='5-11'/>
   </cputune>
+
   <os>
     <type arch="x86_64" machine="pc-q35-6.0">hvm</type>
     <loader readonly="yes" type="pflash">/usr/share/edk2-ovmf/OVMF_CODE.secboot.fd</loader>
@@ -54,7 +56,7 @@
     <ioapic driver="kvm"/>
   </features>
   <cpu mode="host-passthrough" check="none" migratable="off">
-    <topology sockets="1" dies="1" cores="6" threads="2"/>
+    <topology sockets="1" dies="1" cores="5" threads="2"/>
     <cache mode="passthrough"/>
     <feature policy="require" name="invtsc"/>
     <feature policy="require" name="topoext"/>
@@ -95,6 +97,7 @@
       <address type="drive" controller="0" bus="0" target="0" unit="2"/>
     </disk>
     <controller type="scsi" index="0" model="virtio-scsi">
+      <driver queues='8' iothread='1'/>
       <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
     </controller>
     <controller type="usb" index="0" model="qemu-xhci">
