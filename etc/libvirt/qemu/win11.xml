@@ -77,7 +77,7 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type="file" device="disk">
       <driver name="qemu" type="qcow2" discard="unmap"/>
-      <source file="/mnt/gentoo/var/lib/libvirt/images/win11.qcow2"/>
+      <source file="/var/lib/libvirt/images/win11.qcow2"/>
       <target dev="sda" bus="scsi"/>
       <boot order="1"/>
       <address type="drive" controller="0" bus="0" target="0" unit="0"/>
