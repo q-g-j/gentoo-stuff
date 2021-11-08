@@ -17,8 +17,8 @@ Usage:
 
 
 Example:
-        jail-run bridge0 192.168.100.230 minecraft
-	(This assumes that bridge0 uses subnet 192.168.100.0/24 and the given IP is not in use)
+        jail-run wlanbridge 192.168.100.230 minecraft
+	(This assumes that wlanbridge uses subnet 192.168.100.0/24 and the given IP is not in use)
 EOF
 }
 
