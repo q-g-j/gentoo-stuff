@@ -24,11 +24,12 @@ A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kv
 *libvirt*: v7.7.0<br/>
 *QEMU*: v6.0.0<br/>
 - my current libvirt guest XMLs for Win11 and macOS: [link](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
+- using 5 cores / 10 threads for the guests, leaving 1 core / 2 threads for "emulatorpin" and "iothreadpin"
 - passing through the onboard USB 3 controller
-- enabled avic in kvm_amd kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters)<br/>
+- enabled avic in the *kvm_amd* kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters)<br/>
 Note: according to [this site](https://www.reddit.com/r/VFIO/comments/pn3etv/maxim_levitskys_latest_work_on_apicvavic_allows/) the new kernel 5.15 has some improvements to the AVIC code.
 Disabling hyper-v enlightenments like vapic, stimer and synic should not be necessary anymore.
-- using a custom libvirt [hooks file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) with the following features:<br/>
+- using a custom libvirt [hooks script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) with the following features:<br/>
   * set the cpu governor<br/>
   * enable / disable some kernel optimizations<br/>
   * enable / disable hugepages<br/>
@@ -45,39 +46,39 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
 The purpose of the function is to create a WLAN bridge, which shares the same subnet with the host.<br/>
 What it does, is:
 1. adding a new bridge device, which has to be assigned to all guests
-2. starting *"dnsmasq"* which uses DHCP with a custom IP range
+2. starting *"dnsmasq"* which acts as a DHCP server with a custom IP range
 3. creating a new table via "ip rule add" and adding all possible IPs from the DHCP IP range to it
 4. routing all these IPs through the dnsmasq server. You can print the rules with:<br/>`ip rule | grep --color=never 99; echo; echo Table 99:; ip route show table 99`
 5. finally starting "parprouted". This program "joins" the involved interfaces (wlan0 and wlanbridge) to one address space (the hosts subnet)
 
 #### *Requirements:*
 - `net.ipv4.ip_forward = 1` in */etc/sysctl.conf*
-- the same bridge device (e.g. wlanbridge) assigned to each guests network interface. The bridge will be created if desired.
+- the same bridge device (e.g. wlanbridge) assigned to each guest's network interface. The bridge will be created if desired.
 - *net-dns/dnsmasq*
 - *net-firewall/parprouted* - not in gentoo portage but I found an old ebuild and fixed it. Get it from my [overlay](https://github.com/q-g-j/qgj-overlay)
 
 #### *Instructions:*
-Look into the [hooks file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) and change the necessary variables at the top of the file. At the bottom add *"wlan_bridge start"* and *"wlan_bridge stop"* in the *"prepare"* and *"stopped"* sections of your VMs.<br/>
-For mdns multicasting to work, you can just uncomment the line *"enable-reflector=yes"* and change the line *"allow-interfaces="* to look like: `allow-interfaces=wlan0,wlanbridge` in [*/etc/avahi/avahi-daemon.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/avahi/avahi-daemon.conf) and restart avahi-daemon.service.<br/>
-Now all guests, the host and devices connected to the hosts router will be able to communicate with each other (ping, [SMB](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/samba/smb.conf), printing via Bonjour, ...) and have internet. The IPs will be assigned via DHCP. For proper LAN hostname detection in Windows Explorer I installed *net-misc/wsdd* (from *guru* overlay) - activate with `systemctl enable --now wsdd`.<br/>
-Note: The VMs MUST use an IP that is within the custom DHCP range (changeable variable inside the hooks file) if using the new function *"wlan_bridge"* due to the static routing table.<br/>
+Look into the [hooks script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) and change the necessary variables at the top of the file. At the bottom add *"wlan_bridge start"* and *"wlan_bridge stop"* in the *"prepare"* and *"stopped"* sections of your VMs.<br/>
+For mdns multicasting to work, you can just uncomment the line *"enable-reflector=yes"* and change the line *"#allow-interfaces="* to look like: `allow-interfaces=wlan0,wlanbridge` in [*/etc/avahi/avahi-daemon.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/avahi/avahi-daemon.conf) and restart avahi-daemon.service.<br/>
+Now all guests, the host and devices connected to the host's router will be able to communicate with each other (ping, [SMB](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/samba/smb.conf), printing via Bonjour, ...) and have internet. The IPs will be assigned via DHCP. For proper LAN hostname detection in Windows Explorer I installed *net-misc/wsdd* (from *guru* overlay) - activate with `systemctl enable --now wsdd`.<br/>
+Note: The VMs MUST use an IP that is within the custom DHCP range (changeable variable inside the hooks script) if using the new function *"wlan_bridge"* due to the static routing table.<br/>
 The hooks file creates the bridge device and starts the services on demand. When the last VM is stopped, the bridge will be deleted and the services killed.
 
 ## Notes on the Win11 VM:
 - libvirt XML: [win11.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml).
-- Windows 11 now needs TPM 2.0 enabled. This can be emulated: install *app-crypt/swtpm* and add these lines to the xml (in "devices"):<br/>
+- Windows 11 needs TPM 2.0 enabled. This can easily be emulated: install *app-crypt/swtpm* and add these lines to the xml (in "devices"):<br/>
 `<tpm model="tpm-tis">`<br/>
 `<backend type="emulator" version="2.0"/>`<br/>
 `</tpm>`<br/>
 Also change `OVMF_CODE.fd` to `OVMF_CODE.secboot.fd`.
 - enabled Message-Signaled Interrupt mode for the HDMI audio PCI interrupt with *MSI mode utility* ([download](https://github.com/q-g-j/gentoo-stuff/blob/master/win11/MSI_util/MSI_util_v3.zip?raw=true)) to get rid of sound cracklings (run as Administrator)
 - using [Looking Glass](https://looking-glass.io/) (needs IVSHMEM device: [see here](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Using_Looking_Glass_to_stream_guest_screen_to_the_host)) for remote desktop from Linux to Windows
-- using [Scream](https://github.com/duncanthrax/scream) via network for audio in the guest (in alsa mode)
+- using [Scream](https://github.com/duncanthrax/scream) via network for audio in the guest (in alsa mode). See [below](https://github.com/q-g-j/gentoo-stuff#scream-audio-via-alsa) for instructions
 - applied an [acpi table patch](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/portage/patches/app-emulation/qemu-6.0.0/acpi-table.patch) to qemu and added custom smbios labels to the VMs xml. This made it possible for me to play the game *Red Dead Redemption 2* inside my guest without it crashing immediately. Found this tip on [Reddit](https://www.reddit.com/r/VFIO/comments/jy8ri4/a_possible_solution_to_red_dead_redemption_2_not/). You can use generic names for the smbios labels or get them from your own system with:<br/>
 `sudo dmidecode --type 2`<br/>
 `sudo dmidecode --type 4`<br/>
 `sudo dmidecode --type 17`<br/><br/>
-Note: *"sys-apps/dmidecode"* has to be installed if using the following changes to the xml! On gentoo it was pulled in as a dependency of *"libvirt"*, on arch I had to manually install it.
+Note: *"sys-apps/dmidecode"* has to be installed if using the following changes to the xml! On Gentoo it was pulled in as a dependency of *"libvirt"*, on Arch I had to manually install it.
 Here are the necessary changes to the [libvirt xml:](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml):
 ```
 domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
@@ -121,7 +122,7 @@ In mac OS open a terminal:<br/>
 `brew install --cask xquartz`<br/>
 `brew tap homebrew/cask-versions`<br/>
 `brew install --cask --no-quarantine wine-staging`<br/>
-Reboot.
+A reboot is required.
 - Removed BaseImage.img in libvirt xml before restarting the vm.
 - enabled host-passthrough support for my Ryzen CPU. Needed the patches from this [site](https://github.com/AMD-OSX/AMD_Vanilla/blob/opencore/17h_19h/patches.plist). You can use my already patched config.plist or OpenCore image: See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore).<br/>
 You can now use host-passthrough as well as the topoext feature to pass cores and threads correctly. Of course you need to remove:<br/>
