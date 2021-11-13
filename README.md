@@ -133,7 +133,7 @@ From<br/>
 - Update: my old USB sound card (Behringer UCA-222) is working perfectly - though NOT via USB passthrough (LOTS of crackling), but when it's connected to the passed USB3 PCI controller
 
 ## macOS VM with GPU passthrough:
-- libvirt XML: [macOS-gpu.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS-gpu.xml).
+- libvirt XML: [macOS.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS.xml).
 - Need the vendor-reset kernel module enabled (app-emulation/vendor-reset). See [*/etc/modprobe.d/vendor-reset.conf*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/modprobe.d/vendor-reset.conf) in my repo. Got rid of kernel errors / warnings by adding `pci=noats` to `GRUB_CMDLINE_LINUX` in [*/etc/default/grub*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/default/grub)
 - In order for HDMI audio to work, I had to **enable** *AppleALC.kext* and **disable** *VoodooHDA.kext*.
 - Tested with the game *Middle-earth: Shadow of Mordor* and got stable 50-60 fps. Measured fps with *Quartz Debug*. See [here](https://www.addictivetips.com/mac-os/view-fps-on-macos/) for details. For Catalina I needed to download an older version of *Additional Tools for Xcode*, for example version 12 should work.
