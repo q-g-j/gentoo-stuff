@@ -14,12 +14,11 @@ A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kv
 *holgersson-overlay*<br/>
 [*qgj*](https://github.com/q-g-j/qgj-overlay)
 
-The [*cockpit*](https://github.com/orumin/cockpit-overlay.git) overlay needs to be added manually:
-- create the file [/etc/layman/overlays/cockpit.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/layman/overlays/cockpit.xml).
-- `sudo layman-updater -R; sudo layman -a cockpit`
-
-My overlay ([*qgj*](https://github.com/q-g-j/qgj-overlay)) can be added with:<br/>
-- `sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xml -f -a qgj`
+The [*cockpit*](https://github.com/orumin/cockpit-overlay.git) overlay and my overlay ([*qgj*](https://github.com/q-g-j/qgj-overlay)) need to be added manually:<br/>
+```
+sudo layman -o https://github.com/q-g-j/gentoo-stuff/raw/master/etc/layman/overlays/cockpit.xml -f -a cockpit
+sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xml -f -a qgj
+```
 
 
 ## General information about my libvirt VMs:
