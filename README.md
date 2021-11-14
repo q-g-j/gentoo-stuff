@@ -16,7 +16,7 @@ A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kv
 
 The [*cockpit*](https://github.com/orumin/cockpit-overlay.git) overlay and my overlay ([*qgj*](https://github.com/q-g-j/qgj-overlay)) need to be added manually:<br/>
 ```
-sudo layman -o https://github.com/q-g-j/gentoo-stuff/raw/master/etc/layman/overlays/cockpit.xml -f -a cockpit
+sudo layman -o https://raw.githubusercontent.com/q-g-j/gentoo-stuff/master/etc/layman/overlays/cockpit.xml -f -a cockpit
 sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xml -f -a qgj
 ```
 
