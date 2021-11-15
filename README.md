@@ -63,11 +63,22 @@ What it does, is:
 - *net-firewall/parprouted* - not in gentoo portage but I found an old ebuild and fixed it. Get it from my [overlay](https://github.com/q-g-j/qgj-overlay)
 
 #### *Instructions:*
-Look into the [hook script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) and change the necessary variables at the top of the file. At the bottom add *"wlan_bridge start"* and *"wlan_bridge stop"* in the *"prepare"* and *"stopped"* sections of your VMs.<br/><br/>
-For mdns multicasting to work, you can just uncomment the line *"enable-reflector=yes"* and change the line *"#allow-interfaces="* to look like: `allow-interfaces=wlan0,wlanbridge` in [*/etc/avahi/avahi-daemon.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/avahi/avahi-daemon.conf) and restart avahi-daemon.service.<br/><br/>For proper LAN hostname detection in Windows Explorer I installed *net-misc/wsdd* (from *guru* overlay) - activate with:<br/>
-`sudo systemctl enable --now wsdd`.<br/><br/>
-Now all guests, the host and devices connected to the host's router will be able to communicate with each other (ping, [SMB](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/samba/smb.conf), printing via Bonjour, ...) and have internet. The IPs will be assigned via DHCP.<br/><br/>
-Note: If you assign the IP address inside a guest manually, it MUST be an IP that is within the custom DHCP range (changeable variables inside the hook script) if using the new function *"wlan_bridge"* due to the static routing table.<br/><br/>
+Look into the [hook script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) and change the necessary variables at the top of the file. At the bottom add *"wlan_bridge start"* and *"wlan_bridge stop"* in the *"prepare"* and *"stopped"* sections of your VMs.<br/>
+
+For **multicast-DNS** to work, edit [*/etc/avahi/avahi-daemon.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/avahi/avahi-daemon.conf) and uncomment and change the following lines:<br/>
+`enable-reflector=yes`<br/>
+`allow-interfaces=wlan0,wlanbridge`<br/>
+Then restart the avahi-daemon service:<br/>
+`sudo systemctl restart avahi-daemon`<br/>
+You can test multicast-DNS / Bonjour with this tool: [zeroconfServiceBrowser](https://www.tobias-erichsen.de/software/zeroconfservicebrowser.html).<br/>
+
+For proper **LAN hostname detection** in Windows Explorer I installed *net-misc/wsdd* (from *guru* overlay) - activate with:<br/>
+`sudo systemctl enable --now wsdd`.<br/>
+
+Now all guests, the host and devices connected to the host's router will be able to communicate with each other (ping, [SMB](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/samba/smb.conf), printing via Bonjour, ...) and have internet. The IPs will be assigned via DHCP.<br/>
+
+Note: If you assign the IP address inside a guest manually, it MUST be an IP that is within the custom DHCP range (changeable variables inside the hook script) if using the new function *"wlan_bridge"* due to the static routing table.<br/>
+
 The hook script creates the bridge device and starts the services on demand. When the last VM is stopped, the bridge will be deleted and the services killed.
 
 ## Notes on the Win11 VM:
