@@ -35,7 +35,7 @@ sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xm
 - enabled avic in the *kvm_amd* kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters)<br/>
 Note: according to [this site](https://www.reddit.com/r/VFIO/comments/pn3etv/maxim_levitskys_latest_work_on_apicvavic_allows/) the new kernel 5.15 has some improvements to the AVIC code.
 Disabling hyper-v enlightenments like vapic, stimer and synic should not be necessary anymore.
-- using a custom libvirt [hooks script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) with the following features:<br/>
+- using a custom libvirt [hook script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) with the following features:<br/>
   * set the cpu governor<br/>
   * enable / disable some kernel optimizations<br/>
   * enable / disable hugepages<br/>
@@ -46,8 +46,7 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
 #### lstopo (from sys-apps/hwloc):
 <img src="https://github.com/q-g-j/gentoo-stuff/raw/master/lstopo.svg" width="600">
 
-
-### WLAN bridging *(libvirt [hooks](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) function *"wlan_bridge*"):*
+### WLAN bridging *(libvirt [hook](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) function *"wlan_bridge*"):*
 #### *Description:*
 The purpose of the function is to create a WLAN bridge, which shares the same subnet with the host.<br/>
 What it does, is:
@@ -64,11 +63,12 @@ What it does, is:
 - *net-firewall/parprouted* - not in gentoo portage but I found an old ebuild and fixed it. Get it from my [overlay](https://github.com/q-g-j/qgj-overlay)
 
 #### *Instructions:*
-Look into the [hooks script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) and change the necessary variables at the top of the file. At the bottom add *"wlan_bridge start"* and *"wlan_bridge stop"* in the *"prepare"* and *"stopped"* sections of your VMs.<br/>
-For mdns multicasting to work, you can just uncomment the line *"enable-reflector=yes"* and change the line *"#allow-interfaces="* to look like: `allow-interfaces=wlan0,wlanbridge` in [*/etc/avahi/avahi-daemon.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/avahi/avahi-daemon.conf) and restart avahi-daemon.service.<br/>
-Now all guests, the host and devices connected to the host's router will be able to communicate with each other (ping, [SMB](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/samba/smb.conf), printing via Bonjour, ...) and have internet. The IPs will be assigned via DHCP. For proper LAN hostname detection in Windows Explorer I installed *net-misc/wsdd* (from *guru* overlay) - activate with `systemctl enable --now wsdd`.<br/>
-Note: The VMs MUST use an IP that is within the custom DHCP range (changeable variable inside the hooks script) if using the new function *"wlan_bridge"* due to the static routing table.<br/>
-The hooks file creates the bridge device and starts the services on demand. When the last VM is stopped, the bridge will be deleted and the services killed.
+Look into the [hook script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) and change the necessary variables at the top of the file. At the bottom add *"wlan_bridge start"* and *"wlan_bridge stop"* in the *"prepare"* and *"stopped"* sections of your VMs.<br/><br/>
+For mdns multicasting to work, you can just uncomment the line *"enable-reflector=yes"* and change the line *"#allow-interfaces="* to look like: `allow-interfaces=wlan0,wlanbridge` in [*/etc/avahi/avahi-daemon.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/avahi/avahi-daemon.conf) and restart avahi-daemon.service.<br/><br/>For proper LAN hostname detection in Windows Explorer I installed *net-misc/wsdd* (from *guru* overlay) - activate with:<br/>
+`sudo systemctl enable --now wsdd`.<br/><br/>
+Now all guests, the host and devices connected to the host's router will be able to communicate with each other (ping, [SMB](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/samba/smb.conf), printing via Bonjour, ...) and have internet. The IPs will be assigned via DHCP.<br/><br/>
+Note: If you assign the IP address inside a guest manually, it MUST be an IP that is within the custom DHCP range (changeable variables inside the hook script) if using the new function *"wlan_bridge"* due to the static routing table.<br/><br/>
+The hook script creates the bridge device and starts the services on demand. When the last VM is stopped, the bridge will be deleted and the services killed.
 
 ## Notes on the Win11 VM:
 - libvirt XML: [win11.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml).
