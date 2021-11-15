@@ -3,13 +3,13 @@
 # /etc/libvirt/hooks/qemu:
 #
 # Functions:
-#	governor_set o|f|p|s (o=ondemand, f=performance, p=powersave, s=schedutil)
-#	kernel_optimizations start|stop
-#	hugepages start|stop
-#	wlan_bridge start|stop (new version which uses a routing table)
-#	wlan_bridge_iptables start|stop (old version which uses iptables)
-#	vfio_shared_pci start|stop "0000:aa:bb.c 0000:dd:ee.f"
-#	scream_audio start|stop
+#    governor_set o|f|p|s (o=ondemand, f=performance, p=powersave, s=schedutil)
+#    kernel_optimizations start|stop
+#    hugepages start|stop
+#    wlan_bridge start|stop (new version which uses a routing table)
+#    wlan_bridge_iptables start|stop (old version which uses iptables)
+#    vfio_shared_pci start|stop "0000:aa:bb.c 0000:dd:ee.f"
+#    scream_audio start|stop
 #
 # Look in the FUNCTIONS section for each functions description.
 
@@ -19,16 +19,16 @@
 #########################
 
 # CPUs that are passed to the guests:
-cpus="0 1 2 3 4 6 7 8 9 10"
+cpus="0 1 2 3 4 5 6 7 8 9 10 11"
 
 # WLAN bridging (used by "wlan_bridge start|stop" and "wlan_bridge_iptables start|stop")
 wlan_devname="wlan0"
-create_bridge=1                         # 0: use an existing bridge; 1: create a new bridge
-bridge_devname="wlanbridge"             # the name of the bridge. If "$create_bridge" is set to "0", this device must already exist!
-bridge_ip="192.168.100.201/24"          # will be used as the guest gateway / DNS server and the dnsmasq DHCP server
-dhcp_range_begin="192.168.100.202"      # make sure, that these IPs are free in your router
-dhcp_range_end="192.168.100.220"        # (use only these addresses, even if choosing the IP statically in the guest!!!)
-wlan_gateway="192.168.100.1"            # your hosts WLAN routers IP
+create_bridge=1                     # 0: use an existing bridge; 1: create a new bridge
+bridge_devname="wlanbridge"         # the name of the bridge. If "$create_bridge" is set to "0", this device must already exist!
+bridge_ip="192.168.100.201/24"      # will be used as the guest gateway / DNS server and the dnsmasq DHCP server
+dhcp_range_begin="192.168.100.202"  # make sure, that these IPs are free in your router
+dhcp_range_end="192.168.100.220"    # (use only these addresses, even if choosing the IP statically in the guest!!!)
+wlan_gateway="192.168.100.1"        # your hosts WLAN routers IP
 forward_hostnames="
 192.168.100.1    fritz.box
 192.168.100.201  gentoo
@@ -38,7 +38,7 @@ forward_hostnames="
 # Total amount of hugepages in GB for all guests (used by "hugepages start|stop")
 # Hugepages will only be activated once, even with multiple vms running - and
 # deactivated, when the last vm is shutdown.
-hugepages_gb="20"
+hugepages_gb="23"
 
 # Scream audio command line arguments (used by "scream_audio start|stop")
 scream_args="-o alsa -i $bridge_devname"
@@ -47,6 +47,8 @@ scream_args="-o alsa -i $bridge_devname"
 ##############
 # FUNCTIONS: #
 ##############
+
+VM=$1
 
 LC_ALL=C
 PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
@@ -123,7 +125,7 @@ hugepages() {
             HUGEPAGES_NEEDED=$(($HUGEPAGES_NEEDED_BASE))
             while [ "$(($(cat /proc/meminfo  | grep Huge | grep Total | awk '{print $2}') * 2))" != "$HUGEPAGE_SIZE_DEMANDED_MB" ]; do
                 echo $HUGEPAGES_NEEDED >/proc/sys/vm/nr_hugepages
-                sleep 0.2
+                sleep 0.1
             done
             HUGEPAGES_ALLOCATED=`cat /proc/sys/vm/nr_hugepages`
             SHMMAX_NEEDED=$((HUGEPAGES_ALLOCATED*HUGEPAGE_SIZE_KB*1024))
@@ -302,7 +304,7 @@ wlan_bridge_iptables() {
 # Usage example:
 #       vfio_shared_pci "0000:02:00.0 0000:2a:00.3"
 vfio_shared_pci() {
-    ARGS="$(echo $@ | grep -v start | grep -v stop)"
+    ARGS="$(echo $@ | sed 's/start//' | sed 's/stop//')"
     case $1 in start)
         for i in $ARGS; do
             PCI_PATH=$(echo $i | sed 's/^/pci_/' | sed 's/:/_/g' | sed 's/\./_/g')
@@ -325,7 +327,7 @@ vfio_shared_pci() {
 # Usage:
 #       vfio_shared_pci "vendor:product vendor:product ..."
 vfio_shared_pci_by_id() {
-    ARGS="$(echo $@ | grep -v start | grep -v stop)"
+    ARGS="$(echo $@ | sed 's/start//' | sed 's/stop//')"
     case $1 in start)
         for i in $ARGS; do
             vendor=$(echo "$i" | sed 's/:.*//')
@@ -374,38 +376,54 @@ scream_audio() {
 #############
 
 case $1 in
-	win11)
-		if [ "$2" == "prepare" ]; then
-			governor_set f
-			kernel_optimizations start
-			hugepages start
-			vfio_shared_pci start "0000:2a:00.3"
-			wlan_bridge start
-			scream_audio start
-		fi
-		if [ "$2" == "stopped" ]; then
-			vfio_shared_pci stop "0000:2a:00.3"
-			hugepages stop
-			kernel_optimizations stop
-			governor_set s
-			wlan_bridge stop
-			scream_audio stop
-		fi
-		;;
-	macOS)
-		if [ "$2" == "prepare" ]; then
-			governor_set f
-			kernel_optimizations start
-			hugepages start
-			vfio_shared_pci start "0000:2a:00.3"
-			wlan_bridge start
-		fi
-		if [ "$2" == "stopped" ]; then
-			vfio_shared_pci stop "0000:2a:00.3"
-			hugepages stop
-			kernel_optimizations stop
-			governor_set s
-			wlan_bridge stop
-		fi
-		;;
+    win11-games)
+        if [ "$2" == "prepare" ]; then
+            governor_set f
+            kernel_optimizations start
+            wlan_bridge start
+            hugepages start
+            vfio_shared_pci start "0000:2a:00.3"
+            scream_audio start
+        fi
+        if [ "$2" == "stopped" ]; then
+            governor_set s
+            kernel_optimizations stop
+            vfio_shared_pci stop "0000:2a:00.3"
+            hugepages stop
+            wlan_bridge stop
+            scream_audio stop
+        fi
+        ;;
+    win11-dev)
+        if [ "$2" == "prepare" ]; then
+            kernel_optimizations start
+            governor_set f
+            wlan_bridge start
+            hugepages start
+            scream_audio start
+        fi
+        if [ "$2" == "stopped" ]; then
+            kernel_optimizations stop
+            governor_set s
+            hugepages stop
+            wlan_bridge stop
+            scream_audio stop
+        fi
+        ;;
+    macOS)
+        if [ "$2" == "prepare" ]; then
+            kernel_optimizations start
+            governor_set f
+            wlan_bridge start
+            hugepages start
+            vfio_shared_pci start "0000:2a:00.3"
+        fi
+        if [ "$2" == "stopped" ]; then
+            kernel_optimizations stop
+            governor_set s
+            vfio_shared_pci stop "0000:2a:00.3"
+            hugepages stop
+            wlan_bridge stop
+        fi
+        ;;
 esac
