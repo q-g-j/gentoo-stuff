@@ -65,7 +65,7 @@ What it does, is:
 #### *Instructions:*
 Look into the [hook script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) and change the necessary variables at the top of the file. <br/>
 There you have to set a custom DHCP range for the DHCP server (provided by dnsmasq) so I strongly recommend making sure that this range is not within the DHCP range of your physical WiFi router. For example:<br/>
-If your router uses a DHCP range from 192.168.100.20 to 192.168.100.200 (my FRITZ!Box allows to change this range), you could use 192.168.100.202 to 192.168.100.220 for the vms and 192.168.100.201 for the wlan bridge device (variable *bridge_ip*).<br/>
+If your router uses a DHCP range from 192.168.100.20 to 192.168.100.200 (my FRITZ!Box allows to change this range), you could use 192.168.100.202 to 192.168.100.220 for the vms and 192.168.100.201 for the bridge device (variable *bridge_ip*).<br/>
 At the bottom of the script add *"wlan_bridge start"* and *"wlan_bridge stop"* in the *"prepare"* and *"stopped"* sections of your VMs.<br/>
 
 
