@@ -25,6 +25,7 @@ media-sound/scream
 media-video/droidcam
 
 net-im/rambox-bin::qgj
+net-im/teams
 net-misc/megasync::4nykey
 	dev-libs/breakpad::4nykey
 	net-misc/meganz-sdk::4nykey
