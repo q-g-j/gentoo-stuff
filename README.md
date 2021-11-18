@@ -52,7 +52,7 @@ The purpose of the function is to create a WLAN bridge, which shares the same su
 What it does, is:
 1. adding a new bridge device, which has to be assigned to all guests
 2. starting *"dnsmasq"* which acts as a DNS server and a DHCP server with a changeable IP range
-3. creating a new table via "ip rule add" and adding all possible IPs from the DHCP IP range to it
+3. creating a new policy routing rule via "ip rule add" and adding all possible IPs from the DHCP IP range to it
 4. routing all these IPs through the dnsmasq server. You can print the rules with:<br/>`ip rule | grep --color=never 99; echo; echo Table 99:; ip route show table 99`
 5. finally starting "parprouted". This program "joins" the involved interfaces (wlan0 and wlanbridge) to one address space (the hosts subnet)
 
