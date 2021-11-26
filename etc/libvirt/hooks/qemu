@@ -103,7 +103,7 @@ kernel_optimizations() {
     fi
 }
 
-# Activate hugepages on first VMs start:
+# Activate hugepages on first VM's start:
 hugepages() {
     if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
         case $1 in start)
@@ -148,7 +148,7 @@ hugepages() {
 }
 
 # WLAN bridging via arp (new, uses a routing table):
-# Needs "dnsmasq" installed (but disabled!), as well as "parprouted".
+# Needs "dnsmasq" and "parprouted" installed.
 # Assign $bridge_devname to your VMs.
 # All VMs will be on the same subnet as the host - starting from $dhcp_range_begin
 wlan_bridge() {
@@ -232,8 +232,8 @@ wlan_bridge() {
 }
 
 # WLAN bridging via arp (old method which uses iptables instead of a routing table):
-# Needs dnsmasq installed (but disabled!), as well as iptables-legacy and parprouted.
-# Assign $bridge_devname to your VMs.
+# Needs "dnsmasq", "iptables-legacy" and "parprouted" installed.
+# Assign $bridge_devname to your .
 # All VMs will be on the same subnet as the host - starting from $dhcp_range_begin
 wlan_bridge_iptables() {
     if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
