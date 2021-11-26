@@ -53,7 +53,7 @@ VM=$1
 LC_ALL=C
 PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
 
-# Set the CPU governor on all cores (recommended: performance):
+# Set the CPU governor - uses variable $cpus (recommended: performance):
 # Usage: governor_set o|f|p|s
 # See below for explanations:
 governor_set() {
