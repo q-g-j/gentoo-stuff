@@ -233,7 +233,7 @@ wlan_bridge() {
 
 # WLAN bridging via arp (old method which uses iptables instead of a routing table):
 # Needs "dnsmasq", "iptables-legacy" and "parprouted" installed.
-# Assign $bridge_devname to your .
+# Assign $bridge_devname to your VMs.
 # All VMs will be on the same subnet as the host - starting from $dhcp_range_begin
 wlan_bridge_iptables() {
     if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
