@@ -28,7 +28,7 @@ bridge_devname="wlanbridge"         # the name of the bridge. If "$create_bridge
 bridge_ip="192.168.100.201/24"      # will be used as the guest gateway / DNS server and the dnsmasq DHCP server
 dhcp_range_begin="192.168.100.202"  # make sure, that these IPs are free in your router
 dhcp_range_end="192.168.100.220"    # (use only these addresses, even if choosing the IP statically in the guest!!!)
-wlan_gateway="192.168.100.1"        # your hosts WLAN routers IP
+wlan_gateway="192.168.100.1"        # your host's WLAN router's IP
 forward_hostnames="
 192.168.100.1    fritz.box
 192.168.100.201  gentoo
