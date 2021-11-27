@@ -21,7 +21,7 @@
     <vcpupin vcpu='7' cpuset='9'/>
     <vcpupin vcpu='8' cpuset='4'/>
     <vcpupin vcpu='9' cpuset='10'/>
-    <emulatorpin cpuset='5-11'/>
+    <emulatorpin cpuset='5,11'/>
   </cputune>
   <os>
     <type arch="x86_64" machine="pc-q35-6.0">hvm</type>
