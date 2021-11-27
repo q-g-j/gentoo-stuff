@@ -1,17 +1,37 @@
 #!/bin/bash
 
+# set CPUs manually or detect the number:
+#CPUS="0 1 2 3 4 6 7 8 9 10 5 11"
+CPUS=$(NUM=0; for i in /sys/devices/system/cpu/cpufreq/policy*/scaling_available_governors; do echo -n $NUM" "; NUM=$((NUM +1)); done)
+
+
 GOV_AVAIL="$(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors)"
+
 
 usage() {
 echo "Usage: gov <governor>"
 echo "governors:"
 for i in $GOV_AVAIL; do
-	echo "    "$i
+	if [ "$i" == "conservative" ]; then echo -e "   "$i"\t| c"; fi
+	if [ "$i" == "ondemand" ];     then echo -e "   "$i"\t| o"; fi
+	if [ "$i" == "performance" ];  then echo -e "   "$i"\t| f"; fi
+	if [ "$i" == "powersave" ];    then echo -e "   "$i"\t| p"; fi
+	if [ "$i" == "schedutil" ];    then echo -e "   "$i"\t| s"; fi
 done
 }
 
 if [ -z $1 ]; then
-	echo "Current CPU governor: "$(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor)
+	echo "Current CPU governors:"
+    echo
+    govs=$(for i in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do echo $i; done | sort -V)
+    for i in $govs; do
+        c=$(echo -e $i | sed 's/^.*policy//g' | sed 's/\/scaling_governor//g')
+        if [ $c -lt 10 ]; then
+            echo "CPU  $c:  $(cat /sys/devices/system/cpu/cpufreq/policy$c/scaling_governor)"
+        else
+            echo "CPU $c:  $(cat /sys/devices/system/cpu/cpufreq/policy$c/scaling_governor)"
+        fi
+    done
 	exit 0
 fi
 
@@ -22,15 +42,42 @@ if [ "$2" != "" ]; then
 fi
 
 OK=0
+
 for i in $GOV_AVAIL; do
-	if [ "$1" == "$i" ]; then
-		for j in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do echo $1 | sudo tee $j > /dev/null; done
+	if [ "$1" == "f" -a "$i" == "performance" ]; then
+		for j in $CPUS; do echo $i | sudo tee /sys/devices/system/cpu/cpufreq/policy$j/scaling_governor > /dev/null; done
 		OK=1
+		NEW=$i
+		break
+	elif [ "$1" == "s" -a "$i" == "schedutil" ]; then
+		for j in $CPUS; do echo $i | sudo tee /sys/devices/system/cpu/cpufreq/policy$j/scaling_governor > /dev/null; done
+		OK=1
+		NEW=$i
+		break
+	elif [ "$1" == "o" -a "$i" == "ondemand" ]; then
+		for j in $CPUS; do echo $i | sudo tee /sys/devices/system/cpu/cpufreq/policy$j/scaling_governor > /dev/null; done
+		OK=1
+		NEW=$i
+		break
+	elif [ "$1" == "p" -a "$i" == "powersave" ]; then
+		for j in $CPUS; do echo $i | sudo tee /sys/devices/system/cpu/cpufreq/policy$j/scaling_governor > /dev/null; done
+		OK=1
+		NEW=$i
+		break
+	elif [ "$1" == "c" -a "$i" == "conservative" ]; then
+		for j in $CPUS; do echo $i | sudo tee /sys/devices/system/cpu/cpufreq/policy$j/scaling_governor > /dev/null; done
+		OK=1
+		NEW=$i
+		break
+	elif [ "$1" == "$i" ]; then
+		for j in $CPUS; do echo $i | sudo tee /sys/devices/system/cpu/cpufreq/policy$j/scaling_governor > /dev/null; done
+		OK=1
+		NEW=$i
 		break
 	fi
 done
 if [ "$OK" == "1" ]; then
-	echo Changed CPU governor to $1
+	echo Changed CPU governor to $NEW
 else
 	usage
 	exit 1
