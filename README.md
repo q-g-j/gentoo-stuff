@@ -49,7 +49,7 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
 
 
 ### L3 Cache fix
-Running `lstopo -p` in a Windows VM (get it [here](https://www.open-mpi.org/software/hwloc/v2.6/)) revealed that the Level 3 cache is not detected correctly. In the host it should be like this:
+Running `lstopo -p` in a Windows VM (get it [here](https://www.open-mpi.org/software/hwloc/v2.6/)) revealed that the Level 3 cache is not detected correctly. In the host it is:
 
 ```
 L3 Cache 1:
