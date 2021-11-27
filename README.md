@@ -42,7 +42,7 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
   * enable / disable WLAN bridging<br/>
   * start / stop scream audio<br/>
   * use one or more PCI devices alternately in the host and in the guest (unbind from driver on vm start / rescan PCI bus on vm shutdown)
-- Fixed L3 cache in VMs - see [below]()
+- fixed the L3 cache in my VMs - see [below](https://github.com/q-g-j/gentoo-stuff#l3-cache-fix)
 
 #### lstopo (from sys-apps/hwloc):
 <img src="https://github.com/q-g-j/gentoo-stuff/raw/master/lstopo.svg" width="600">
