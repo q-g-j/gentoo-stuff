@@ -42,9 +42,116 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
   * enable / disable WLAN bridging<br/>
   * start / stop scream audio<br/>
   * use one or more PCI devices alternately in the host and in the guest (unbind from driver on vm start / rescan PCI bus on vm shutdown)
+- Fixed L3 cache in VMs - see [below]()
 
 #### lstopo (from sys-apps/hwloc):
 <img src="https://github.com/q-g-j/gentoo-stuff/raw/master/lstopo.svg" width="600">
+
+
+### L3 Cache fix
+Running `lstopo -p` (get it [here](https://www.open-mpi.org/software/hwloc/v2.6/)) in a Windows VM revealed that the Level 3 cache is not detected correctly. In the host it should be like this:
+
+```
+L3 Cache 1:
+   CPUs 0,6
+   CPUs 1,7
+   CPUs 2,8
+L3 Cache 2:
+   CPUs 3,9
+   CPUs 4,10
+   CPUs 5,11
+```
+
+But in the VM it is detected in 4 core steps like this (with 5 cores/10 threads):
+
+```
+L3 Cache 1:
+   vCPUs 0,1
+   vCPUs 2,3
+   vCPUs 4,5
+   vCPUs 6,7
+L3 Cache 2:
+   vCPUs 8,9
+```
+
+I found [this thread](https://www.reddit.com/r/VFIO/comments/erwzrg/think_i_found_a_workaround_to_get_l3_cache_shared/) on Reddit which suggests to trick the VM by passing more cores/threads than needed and disabling every 4th virtual core like this:
+
+```
+....
+<vcpu placement="static" current="10">12</vcpu>
+<vcpus>
+  <vcpu id="0" enabled="yes" hotpluggable="no"/>
+  <vcpu id="1" enabled="yes" hotpluggable="yes"/>
+  <vcpu id="2" enabled="yes" hotpluggable="yes"/>
+  <vcpu id="3" enabled="yes" hotpluggable="yes"/>
+  <vcpu id="4" enabled="yes" hotpluggable="yes"/>
+  <vcpu id="5" enabled="yes" hotpluggable="yes"/>
+  <vcpu id="6" enabled="no" hotpluggable="yes"/>
+  <vcpu id="7" enabled="no" hotpluggable="yes"/>
+  <vcpu id="8" enabled="yes" hotpluggable="yes"/>
+  <vcpu id="9" enabled="yes" hotpluggable="yes"/>
+  <vcpu id="10" enabled="yes" hotpluggable="yes"/>
+  <vcpu id="11" enabled="yes" hotpluggable="yes"/>
+</vcpus>
+<iothreads>1</iothreads>
+<cputune>
+  <vcpupin vcpu="0" cpuset="0"/>
+  <vcpupin vcpu="1" cpuset="6"/>
+  <vcpupin vcpu="2" cpuset="1"/>
+  <vcpupin vcpu="3" cpuset="7"/>
+  <vcpupin vcpu="4" cpuset="2"/>
+  <vcpupin vcpu="5" cpuset="8"/>
+  <vcpupin vcpu="8" cpuset="3"/>
+  <vcpupin vcpu="9" cpuset="9"/>
+  <vcpupin vcpu="10" cpuset="4"/>
+  <vcpupin vcpu="11" cpuset="10"/>
+  <emulatorpin cpuset="5,11"/>
+  <iothreadpin iothread="1" cpuset="5,11"/>
+</cputune>
+....
+<cpu mode="host-passthrough" check="none" migratable="off">
+  <topology sockets="1" dies="1" cores="6" threads="2"/>
+  <cache mode="passthrough"/>
+  <feature policy="require" name="invtsc"/>
+  <feature policy="require" name="topoext"/>
+  <feature policy="disable" name="x2apic"/>
+</cpu>
+....
+```
+
+Now `lstopo -p` in Windows results in this:
+
+```
+L3 Cache 1:
+   vCPUs 0,1
+   vCPUs 2,3
+   vCPUs 4,5
+L3 Cache 2:
+   vCPUs 6,7
+   vCPUs 8,9
+```
+
+#### Here are some benchmark results from AIDA64:
+
+Before disabling 2 virtual cores:
+
+```
+L3 Cache: 
+    Read:     80881 MB/s
+    Write:    23342 MB/s
+    Copy:     40729 MB/s
+    Latency:   11.2 ns
+
+```
+After disabling 2 virtual cores:
+
+```
+L3 Cache: 
+    Read:     252.93 GB/s
+    Write:    348.22 GB/s
+    Copy:     171.37 GB/s
+    Latency:    10.8  ns
+```
 
 ### WLAN bridging *(libvirt [hook](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) function *"wlan_bridge*"):*
 #### *Description:*
