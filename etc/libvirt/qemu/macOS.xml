@@ -9,20 +9,22 @@
     <nosharepages/>
     <locked/>
   </memoryBacking>
-  <vcpu placement="static" current="10">12</vcpu>
+  <vcpu placement="static" current="12">14</vcpu>
   <vcpus>
-    <vcpu id="0" enabled="yes" hotpluggable="no"/>
-    <vcpu id="1" enabled="yes" hotpluggable="yes"/>
-    <vcpu id="2" enabled="yes" hotpluggable="yes"/>
-    <vcpu id="3" enabled="yes" hotpluggable="yes"/>
-    <vcpu id="4" enabled="yes" hotpluggable="yes"/>
-    <vcpu id="5" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="0" enabled="yes" hotpluggable="no" order="1"/>
+    <vcpu id="1" enabled="yes" hotpluggable="yes" order="2"/>
+    <vcpu id="2" enabled="yes" hotpluggable="yes" order="3"/>
+    <vcpu id="3" enabled="yes" hotpluggable="yes" order="4"/>
+    <vcpu id="4" enabled="yes" hotpluggable="yes" order="5"/>
+    <vcpu id="5" enabled="yes" hotpluggable="yes" order="6"/>
     <vcpu id="6" enabled="no" hotpluggable="yes"/>
     <vcpu id="7" enabled="no" hotpluggable="yes"/>
-    <vcpu id="8" enabled="yes" hotpluggable="yes"/>
-    <vcpu id="9" enabled="yes" hotpluggable="yes"/>
-    <vcpu id="10" enabled="yes" hotpluggable="yes"/>
-    <vcpu id="11" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="8" enabled="yes" hotpluggable="yes" order="7"/>
+    <vcpu id="9" enabled="yes" hotpluggable="yes" order="8"/>
+    <vcpu id="10" enabled="yes" hotpluggable="yes" order="9"/>
+    <vcpu id="11" enabled="yes" hotpluggable="yes" order="10"/>
+    <vcpu id="12" enabled="yes" hotpluggable="yes" order="11"/>
+    <vcpu id="13" enabled="yes" hotpluggable="yes" order="12"/>
   </vcpus>
   <cputune>
     <vcpupin vcpu="0" cpuset="0"/>
@@ -31,11 +33,12 @@
     <vcpupin vcpu="3" cpuset="7"/>
     <vcpupin vcpu="4" cpuset="2"/>
     <vcpupin vcpu="5" cpuset="8"/>
-    <vcpupin vcpu="8" cpuset="3"/>
-    <vcpupin vcpu="9" cpuset="9"/>
-    <vcpupin vcpu="10" cpuset="4"/>
-    <vcpupin vcpu="11" cpuset="10"/>
-    <emulatorpin cpuset="5,11"/>
+    <vcpupin vcpu="6" cpuset="3"/>
+    <vcpupin vcpu="7" cpuset="9"/>
+    <vcpupin vcpu="8" cpuset="4"/>
+    <vcpupin vcpu="9" cpuset="10"/>
+    <vcpupin vcpu="10" cpuset="5"/>
+    <vcpupin vcpu="11" cpuset="11"/>
   </cputune>
   <os>
     <type arch="x86_64" machine="pc-q35-6.0">hvm</type>
@@ -48,7 +51,7 @@
     <vmport state="off"/>
   </features>
   <cpu mode="host-passthrough" check="none" migratable="off">
-    <topology sockets="1" dies="1" cores="6" threads="2"/>
+    <topology sockets="1" dies="1" cores="7" threads="2"/>
     <cache mode="passthrough"/>
     <feature policy="require" name="invtsc"/>
     <feature policy="require" name="topoext"/>
