@@ -79,18 +79,18 @@ I found [this thread](https://www.reddit.com/r/VFIO/comments/erwzrg/think_i_foun
 ```
   <vcpu placement="static" current="10">12</vcpu>
   <vcpus>
-    <vcpu id="0" enabled="yes" hotpluggable="no" order="1"/>
-    <vcpu id="1" enabled="yes" hotpluggable="yes" order="2"/>
-    <vcpu id="2" enabled="yes" hotpluggable="yes" order="3"/>
-    <vcpu id="3" enabled="yes" hotpluggable="yes" order="4"/>
-    <vcpu id="4" enabled="yes" hotpluggable="yes" order="5"/>
-    <vcpu id="5" enabled="yes" hotpluggable="yes" order="6"/>
+    <vcpu id="0" enabled="yes" hotpluggable="no"/>
+    <vcpu id="1" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="2" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="3" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="4" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="5" enabled="yes" hotpluggable="yes"/>
     <vcpu id="6" enabled="no" hotpluggable="yes"/>
     <vcpu id="7" enabled="no" hotpluggable="yes"/>
-    <vcpu id="8" enabled="yes" hotpluggable="yes" order="7"/>
-    <vcpu id="9" enabled="yes" hotpluggable="yes" order="8"/>
-    <vcpu id="10" enabled="yes" hotpluggable="yes" order="9"/>
-    <vcpu id="11" enabled="yes" hotpluggable="yes" order="10"/>
+    <vcpu id="8" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="9" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="10" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="11" enabled="yes" hotpluggable="yes"/>
   </vcpus>
   <iothreads>1</iothreads>
   <cputune>
@@ -100,10 +100,10 @@ I found [this thread](https://www.reddit.com/r/VFIO/comments/erwzrg/think_i_foun
     <vcpupin vcpu="3" cpuset="7"/>
     <vcpupin vcpu="4" cpuset="2"/>
     <vcpupin vcpu="5" cpuset="8"/>
-    <vcpupin vcpu="6" cpuset="3"/>
-    <vcpupin vcpu="7" cpuset="9"/>
-    <vcpupin vcpu="8" cpuset="4"/>
-    <vcpupin vcpu="9" cpuset="10"/>
+    <vcpupin vcpu="8" cpuset="3"/>
+    <vcpupin vcpu="9" cpuset="9"/>
+    <vcpupin vcpu="10" cpuset="4"/>
+    <vcpupin vcpu="11" cpuset="10"/>
     <emulatorpin cpuset="5,11"/>
     <iothreadpin iothread="1" cpuset="5,11"/>
   </cputune>
