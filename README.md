@@ -74,7 +74,7 @@ L3 Cache 2:
    vCPUs 8,9
 ```
 
-I found [this thread](https://www.reddit.com/r/VFIO/comments/erwzrg/think_i_found_a_workaround_to_get_l3_cache_shared/) on Reddit which suggests to trick the VM by setting more **virtual** cores/threads than needed and disabling every 4th virtual core (and skip those in the CPU pinning part):
+I found [this thread](https://www.reddit.com/r/VFIO/comments/erwzrg/think_i_found_a_workaround_to_get_l3_cache_shared/) on Reddit which suggests to trick the VM by setting more **virtual** cores/threads than needed and disabling every 4th virtual core with the "hotpluggable" feature (and skip those in the CPU pinning part):
 
 ```
 ....
