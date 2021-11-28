@@ -236,7 +236,7 @@ To not rely on a running pulseaudio session, scream uses ALSA in my system. To h
 
 ## Notes on the Mac OS VM:
 - libvirt XML: [macOS.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS.xml)
-- Update: just upgraded from macOS Catalina to Big Sur and it seems to run just the same as before. The kexts are still loading fine. Now even network with *virtio-net* is working.
+- updated to macOS Monterey (uploaded OpenCore images with Monterey support: see [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore))
 - Used *macOS-libvirt-Catalina.xml*, *BaseImage.img* (via *fetch-macOS-v2.py*), *OVMF_CODE.fd* and *OVMF_VARS-1024x768.fd* from [this site](https://github.com/kholia/OSX-KVM).
 - Installed with spice graphics and switched to GPU passthrough later.
 - Uploaded my own **OpenCore.qcow2**. Created the config.plist according to [this site](https://dortania.github.io/OpenCore-Install-Guide/). See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore) for download and description. Can be used for installation too, just tested it (you will need to set the CPU to host-passthrough). This is only meant to be used with AMD Zen processors (e.g. Ryzen)! Propably not working for Intel, but cannot test.
