@@ -1,7 +1,7 @@
 A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kvm with GPU passthrough**. In case you find a mistake, something is not working for you or you have got a question, please use the issues tab.
 
 ## Gentoo related:
-- *Kernel:* sys-kernel/gentoo-sources:5.15.0
+- *Kernel:* sys-kernel/gentoo-sources:5.15.5
 - `eselect profile show` :<br/>
 *default/linux/amd64/17.1/desktop/plasma/systemd*
 - portage configs available in my repo: [*/etc/portage*](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/portage)
