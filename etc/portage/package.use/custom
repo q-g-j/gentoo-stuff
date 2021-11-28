@@ -19,6 +19,11 @@ app-misc/mc -slang
 	sys-apps/util-linux caps
 
 dev-lang/python tk
+#dev-python/spyder
+    x11-libs/wxGTK gstreamer
+    dev-python/PyQt5 webchannel
+    net-libs/zeromq drafts
+    dev-python/python-lsp-server all-plugins
 dev-qt/qt-creator autotools cmake cppcheck git modeling python lsp
 dev-util/kdevelop hex
 

@@ -14,11 +14,26 @@ app-emulation/wine-mono
 app-emulation/wine-staging
 app-misc/appimagelauncher-bin::qgj
 app-portage/eix
+app-portage/kuroo
 
 dev-dotnet/dotnet-sdk-bin
 	virtual/dotnet-sdk
+dev-python/spyder
+	dev-python/qstylizer
+	dev-python/qtconsole
+	sci-libs/rtree
+	dev-python/spyder-kernels
+	dev-python/inflection
+		dev-python/coloredlogs
+		dev-python/humanfriendly
+	dev-python/sympy
+	dev-python/python-lsp-server
+		dev-python/flake8
+			dev-python/pyflakes
 dev-qt/qt-creator
 	dev-qt/qtquicktimeline
+
+games-board/pychess
 
 media-sound/carla
 media-sound/scream
@@ -40,5 +55,5 @@ sys-apps/pacman::holgersson-overlay
 sys-devel/arch-install-scripts
 sys-fs/gocryptfs
 sys-fs/ntfs3g
-sys-kernel/gentoo-sources:5.15.0
+sys-kernel/gentoo-sources
 sys-process/bpytop
