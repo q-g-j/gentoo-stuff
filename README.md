@@ -63,7 +63,7 @@ L3 Cache 2:
    CPUs 5,11
 ```
 
-But in the VM it is detected in 4 core steps like this (with 5 cores/10 threads):
+But in the VM it is detected in 4 core steps like this:
 
 ```
 L3 Cache 1:
