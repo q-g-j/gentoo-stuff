@@ -136,7 +136,7 @@ L3 Cache 2:
 
 #### Here are some benchmark results from AIDA64:
 
-Before disabling 2 virtual cores:
+Before disabling vCPUs 6 and 7:
 
 ```
 L3 Cache: 
@@ -146,7 +146,7 @@ L3 Cache:
     Latency:   11.2 ns
 
 ```
-After disabling 2 virtual cores:
+After disabling vCPUs 6 and 7:
 
 ```
 L3 Cache: 
