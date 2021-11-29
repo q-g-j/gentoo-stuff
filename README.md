@@ -30,8 +30,10 @@ sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xm
 *libvirt*: v7.7.0<br/>
 *QEMU*: v6.0.0<br/>
 - my current libvirt guest XMLs for Win11 and macOS: [link](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
-- using 5 cores / 10 threads for the guests, leaving 1 core / 2 threads for "emulatorpin" and "iothreadpin"
+- ~~using 5 cores / 10 threads for the guests, leaving 1 core / 2 threads for "emulatorpin" and "iothreadpin"~~
+- now passing all cores, dropped emulatorpin and iothreads
 - passing through the onboard USB 3 controller
+- fixed the L3 cache in my VMs - see [below](https://github.com/q-g-j/gentoo-stuff#l3-cache-fix)
 - enabled avic in the *kvm_amd* kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters)<br/>
 Note: according to [this site](https://www.reddit.com/r/VFIO/comments/pn3etv/maxim_levitskys_latest_work_on_apicvavic_allows/) the new kernel 5.15 has some improvements to the AVIC code.
 Disabling hyper-v enlightenments like vapic, stimer and synic should not be necessary anymore.
@@ -42,7 +44,6 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
   * enable / disable WLAN bridging<br/>
   * start / stop scream audio<br/>
   * use one or more PCI devices alternately in the host and in the guest (unbind from driver on vm start / rescan PCI bus on vm shutdown)
-- fixed the L3 cache in my VMs - see [below](https://github.com/q-g-j/gentoo-stuff#l3-cache-fix)
 
 #### lstopo (from sys-apps/hwloc):
 <img src="https://github.com/q-g-j/gentoo-stuff/raw/master/lstopo.svg" width="600">
@@ -72,12 +73,13 @@ L3 Cache 1:
    vCPUs 6,7
 L3 Cache 2:
    vCPUs 8,9
+   vCPUs 10,11
 ```
 
 I found [this thread](https://www.reddit.com/r/VFIO/comments/erwzrg/think_i_found_a_workaround_to_get_l3_cache_shared/) on Reddit which suggests to trick the VM by setting more **virtual** cores/threads than needed and disabling every 4th virtual core with the "hotpluggable" feature:
 
 ```
-  <vcpu placement="static" current="10">12</vcpu>
+  <vcpu placement="static" current="12">14</vcpu>
   <vcpus>
     <vcpu id="0" enabled="yes" hotpluggable="no"/>
     <vcpu id="1" enabled="yes" hotpluggable="yes"/>
@@ -91,8 +93,9 @@ I found [this thread](https://www.reddit.com/r/VFIO/comments/erwzrg/think_i_foun
     <vcpu id="9" enabled="yes" hotpluggable="yes"/>
     <vcpu id="10" enabled="yes" hotpluggable="yes"/>
     <vcpu id="11" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="12" enabled="yes" hotpluggable="yes"/>
+    <vcpu id="13" enabled="yes" hotpluggable="yes"/>
   </vcpus>
-  <iothreads>1</iothreads>
   <cputune>
     <vcpupin vcpu="0" cpuset="0"/>
     <vcpupin vcpu="1" cpuset="6"/>
@@ -104,13 +107,13 @@ I found [this thread](https://www.reddit.com/r/VFIO/comments/erwzrg/think_i_foun
     <vcpupin vcpu="9" cpuset="9"/>
     <vcpupin vcpu="10" cpuset="4"/>
     <vcpupin vcpu="11" cpuset="10"/>
-    <emulatorpin cpuset="5,11"/>
-    <iothreadpin iothread="1" cpuset="5,11"/>
+    <vcpupin vcpu="12" cpuset="5"/>
+    <vcpupin vcpu="13" cpuset="11"/>
   </cputune>
 ```
 ```
   <cpu mode="host-passthrough" check="none" migratable="off">
-    <topology sockets="1" dies="1" cores="6" threads="2"/>
+    <topology sockets="1" dies="1" cores="7" threads="2"/>
     <cache mode="passthrough"/>
     <feature policy="require" name="invtsc"/>
     <feature policy="require" name="topoext"/>
@@ -128,6 +131,7 @@ L3 Cache 1:
 L3 Cache 2:
    vCPUs 6,7
    vCPUs 8,9
+   vCPUs 10,11
 ```
 
 #### Here are some benchmark results from AIDA64:
@@ -146,10 +150,10 @@ After disabling 2 virtual cores:
 
 ```
 L3 Cache: 
-    Read:     252.93 GB/s
-    Write:    348.22 GB/s
-    Copy:     171.37 GB/s
-    Latency:    10.8  ns
+    Read:     562.97 GB/s
+    Write:    476.64 GB/s
+    Copy:     257.79 GB/s
+    Latency:    10.4  ns
 ```
 
 ### WLAN bridging *(libvirt [hook](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) function *"wlan_bridge*"):*
