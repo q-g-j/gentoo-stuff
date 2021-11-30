@@ -12,6 +12,7 @@ Table of contents
         * [Requirements](#requirements)
         * [Instructions](#instructions)
    * [Notes on the Windows VM](#notes-on-the-windows-vm)
+     * [ACPI table patch (for hiding QEMU)](#acpi-table-patch)
      * [Scream audio via ALSA](#scream-audio-via-alsa)
    * [Notes on the macOS VM](#notes-on-the-macos-vm)
      * [macOS VM with GPU passthrough](#macos-vm-with-gpu-passthrough)
@@ -230,7 +231,14 @@ Also change `OVMF_CODE.fd` to `OVMF_CODE.secboot.fd`.
 - enabled Message-Signaled Interrupt mode for the HDMI audio PCI interrupt with *MSI mode utility* ([download](https://github.com/q-g-j/gentoo-stuff/blob/master/win11/MSI_util/MSI_util_v3.zip?raw=true)) to get rid of sound cracklings (run as Administrator)
 - using [Looking Glass](https://looking-glass.io/) (needs IVSHMEM device: [see here](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Using_Looking_Glass_to_stream_guest_screen_to_the_host)) for remote desktop from Linux to Windows
 - using [Scream](https://github.com/duncanthrax/scream) via network for audio in the guest (in alsa mode). See [below](https://github.com/q-g-j/gentoo-stuff#scream-audio-via-alsa) for instructions
-- applied an [acpi table patch](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/portage/patches/app-emulation/qemu-6.0.0/acpi-table.patch) to qemu and added custom smbios labels to the VMs xml. This made it possible for me to play the game *Red Dead Redemption 2* inside my guest without it crashing immediately. Found this tip on [Reddit](https://www.reddit.com/r/VFIO/comments/jy8ri4/a_possible_solution_to_red_dead_redemption_2_not/). You can use generic names for the smbios labels or get them from your own system with:<br/>
+
+ACPI table patch
+----------------
+*Found this tip on [Reddit](https://www.reddit.com/r/VFIO/comments/jy8ri4/a_possible_solution_to_red_dead_redemption_2_not/):*<br/><br/>
+Applied an [acpi table patch](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/portage/patches/app-emulation/qemu-6.0.0/acpi-table.patch) to qemu and added custom smbios labels to the VMs xml.<br/>
+This made it possible for me to play the game *Red Dead Redemption 2* inside my guest without it crashing immediately.<br/>
+Could be useful for hiding QEMU from other games as well, but only needed this for RDR2 so far.<br/><br/>
+You can use generic names for the smbios labels or get them from your own system with:<br/>
 `sudo dmidecode --type 2`<br/>
 `sudo dmidecode --type 4`<br/>
 `sudo dmidecode --type 17`<br/><br/>
