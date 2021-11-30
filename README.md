@@ -291,7 +291,7 @@ In mac OS open a terminal:<br/>
 `brew install --cask --no-quarantine wine-staging`<br/>
 A reboot is required.
 - Removed BaseImage.img in libvirt xml before restarting the vm.
-- enabled host-passthrough support for my Ryzen CPU. Needed the patches from this [site](https://github.com/AMD-OSX/AMD_Vanilla/blob/opencore/17h_19h/patches.plist). You can use my already patched config.plist or OpenCore image: See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore).<br/>
+- enabled host-passthrough support for my Ryzen CPU. Needed the patches from this [site](https://github.com/AMD-OSX/AMD_Vanilla). You can use my already patched config.plist or OpenCore image: See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore).<br/>
 You can now use host-passthrough as well as the topoext feature to pass cores and threads correctly. Of course you need to remove:<br/>
 `<qemu:arg value='-cpu'/>`<br/>
 `<qemu:arg value='Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+pcid,+ssse3,+sse4.2,+popcnt,+avx,+aes,+xsave,+xsaveopt,-x2apic,check'/>`<br/>
