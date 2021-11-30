@@ -1,6 +1,23 @@
 A few config files and useful scripts from my Gentoo PC, mostly for **libvirt/kvm with GPU passthrough**. In case you find a mistake, something is not working for you or you have got a question, please use the issues tab.
 
-## Gentoo related:
+Table of contents
+=================
+
+   * [Gentoo related](#gentoo-related)
+   * [General information about my VMs](#general-information-about-my-vms)
+      * [lstopo](#lstopo)
+      * [L3 cache fix](#l3-cache-fix)
+      * [WLAN bridging](#wlan-bridging)
+        * [Description](#description)
+        * [Requirements](#requirements)
+        * [Instructions](#instructions)
+   * [Notes on the Windows VM](#notes-on-the-windows-vm)
+     * [Scream audio via ALSA](#scream-audio-via-alsa)
+   * [Notes on the macOS VM](#notes-on-the-macos-vm)
+     * [macOS VM with GPU passthrough](#macos-vm-with-gpu-passthrough)
+
+Gentoo related:
+===============
 - *Kernel:* sys-kernel/gentoo-sources:5.15.5
 - `eselect profile show` :<br/>
 *default/linux/amd64/17.1/desktop/plasma/systemd*
@@ -21,7 +38,8 @@ sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xm
 ```
 
 
-## General information about my libvirt VMs:
+General information about my VMs:
+=================================
 - host machine:<br/>
 *Mainboard:* MSI X470 Gaming Plus Max<br/>
 *CPU:* AMD Ryzen 5 3600XT (6 cores / 12 threads in total)<br/>
@@ -45,11 +63,14 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
   * start / stop scream audio<br/>
   * use one or more PCI devices alternately in the host and in the guest (unbind from driver on vm start / rescan PCI bus on vm shutdown)
 
-#### lstopo (from sys-apps/hwloc):
+lstopo:
+-------
+(from sys-apps/hwloc)<br/><br/>
 <img src="https://github.com/q-g-j/gentoo-stuff/raw/master/lstopo.svg" width="600">
 
 
-### L3 Cache fix
+L3 Cache fix:
+-------------
 Running `lstopo -p` in a Windows VM (get it [here](https://www.open-mpi.org/software/hwloc/v2.6/)) revealed that the Level 3 cache is not detected correctly. In the host it is:
 
 ```
@@ -156,8 +177,10 @@ L3 Cache:
     Latency:    10.4  ns
 ```
 
-### WLAN bridging *(libvirt [hook](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) function *"wlan_bridge*"):*
-#### *Description:*
+WLAN bridging:
+==============
+*(libvirt [hook](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) function *"wlan_bridge*"):*
+### *Description:*
 The purpose of the function is to create a WLAN bridge, which shares the same subnet with the host.<br/>
 What it does, is:
 1. adding a new bridge device, which has to be assigned to all guests
@@ -166,13 +189,13 @@ What it does, is:
 4. routing all these IPs through the dnsmasq server. You can print the rules with:<br/>`ip rule | grep --color=never 99; echo; echo Table 99:; ip route show table 99`
 5. finally starting "parprouted". This program "joins" the involved interfaces (wlan0 and wlanbridge) to one address space (the hosts subnet)
 
-#### *Requirements:*
+### *Requirements:*
 - `net.ipv4.ip_forward = 1` in */etc/sysctl.conf*
 - the same bridge device (e.g. wlanbridge) assigned to each guest's network interface. The bridge will be created if desired.
 - *net-dns/dnsmasq*
 - *net-firewall/parprouted* - not in gentoo portage but I found an old ebuild and fixed it. Get it from my [overlay](https://github.com/q-g-j/qgj-overlay)
 
-#### *Instructions:*
+### *Instructions:*
 Look into the [hook script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) and change the necessary variables at the top of the file. <br/>
 There you have to set a custom DHCP range for the DHCP server (provided by dnsmasq) so I strongly recommend making sure that this range is not within the DHCP range of your physical WiFi router. For example:<br/>
 If your router uses a DHCP range from 192.168.100.20 to 192.168.100.200 (my FRITZ!Box allows to change this range), you could use 192.168.100.202 to 192.168.100.220 for the vms and 192.168.100.201 for the bridge device (variable *bridge_ip*).<br/>
@@ -195,7 +218,8 @@ Note: If you assign the IP address inside a guest manually, it MUST be an IP tha
 
 The hook script creates the bridge device and starts the services on demand. When the last VM is stopped, the bridge will be deleted and the services killed.
 
-## Notes on the Win11 VM:
+Notes on the Windows VM:
+========================
 - libvirt XML: [win11.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml).
 - Windows 11 needs TPM 2.0 enabled. This can easily be emulated: install *app-crypt/swtpm* and add these lines to the xml (in "devices"):<br/>
 `<tpm model="tpm-tis">`<br/>
@@ -232,13 +256,15 @@ domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
 </domain>
 ```
 
-### Scream Audio via ALSA:
+Scream audio via ALSA:
+----------------------
 I chose to run scream audio in network mode so no 2nd IVSHMEM device is needed.<br/>
 To not rely on a running pulseaudio session, scream uses ALSA in my system. To have no ALSA program block the sound card, I created `/etc/asound.conf` and made the [dmix](https://alsa.opensrc.org/Dmix) and [dsnoop](https://alsa.opensrc.org/Dsnoop) plugins from ALSA the default devices for output and input and use these explicitly for pipewire (and its pulseaudio implementation).<br/>
 - */etc/asound.conf*: look [here](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/asound.conf) for an example<br/>
 - */etc/pipewire/pipewire.conf*: look near the bottom of [this file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/pipewire/pipewire.conf) inside the `context.objects = [ ... ]` section. There, inside `{   factory = adapter ... }`, you can specify, which alsa devices pipewire should use (one adapter for output, one for input).
 
-## Notes on the Mac OS VM:
+Notes on the macOS VM:
+======================
 - libvirt XML: [macOS.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS.xml)
 - updated to macOS Monterey (uploaded OpenCore images with Monterey support: see [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore))
 - Used *macOS-libvirt-Catalina.xml*, *BaseImage.img* (via *fetch-macOS-v2.py*), *OVMF_CODE.fd* and *OVMF_VARS-1024x768.fd* from [this site](https://github.com/kholia/OSX-KVM).
@@ -264,7 +290,8 @@ From<br/>
 `<qemu:commandline>`<br/>
 - Update: my old USB sound card (Behringer UCA-222) is working perfectly - though NOT via USB passthrough (LOTS of crackling), but when it's connected to the passed USB3 PCI controller
 
-## macOS VM with GPU passthrough:
+macOS VM with GPU passthrough:
+------------------------------
 - libvirt XML: [macOS.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/macOS.xml).
 - Need the vendor-reset kernel module enabled (app-emulation/vendor-reset). See [*/etc/modprobe.d/vendor-reset.conf*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/modprobe.d/vendor-reset.conf) in my repo. Got rid of kernel errors / warnings by adding `pci=noats` to `GRUB_CMDLINE_LINUX` in [*/etc/default/grub*](https://github.com/q-g-j/gentoo-stuff/raw/master/etc/default/grub)
 - In order for HDMI audio to work, I had to **enable** *AppleALC.kext* and **disable** *VoodooHDA.kext*.
