@@ -5,7 +5,7 @@ Applied the AMD Vanilla CPU patches from [https://github.com/AMD-OSX/AMD_Vanilla
 
 UPDATE: finally got the time to update the config.plist to support Monterey.<br/>
 Now I use the newest version of the AMD vanilla patches, which unfortunately require some manual steps. The config.plist has to be altered to match the actual CPU core count.<br/>
-I decided to provide a version for each of the following core counts:<br/>
+I decided to provide an OpenCore image for each of the following core counts:<br/>
 **4, 6, 8, 12, 16, 24, 32**<br/><br/>
 
 **Additionally added and enabled drivers:**<br/>
