@@ -16,6 +16,7 @@ Table of contents
      * [ACPI table patch (for hiding QEMU)](#acpi-table-patch)
      * [Scream audio via ALSA](#scream-audio-via-alsa)
    * [Notes on the macOS VM](#notes-on-the-macos-vm)
+     * [Custom OpenCore image with AMD Vanilla Patches](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore)
      * [macOS VM with GPU passthrough](#macos-vm-with-gpu-passthrough)
 
 Gentoo related:
