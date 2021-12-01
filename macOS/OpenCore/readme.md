@@ -1,3 +1,6 @@
+Custom OpenCore Images with AMD Vanilla Patches
+-----------------------------------------------
+
 **Only for AMD Zen CPUs like Ryzens!**<br/><br/>
 *Based on OpenCore 0.7.3.*<br/><br/>
 Enabled HDMI audio for my AMD RX 570 GPU (enabled AppleALC.kext and disabled VoodooHDA.kext).<br/>
