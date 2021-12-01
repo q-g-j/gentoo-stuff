@@ -1,7 +1,7 @@
-Based on OpenCore 0.7.3.<br/><br/>
-Only for AMD Zen CPUs like Ryzens!<br/>
+**Only for AMD Zen CPUs like Ryzens!**<br/><br/>
+*Based on OpenCore 0.7.3.*<br/><br/>
 Enabled HDMI audio for my AMD RX 570 GPU (enabled AppleALC.kext and disabled VoodooHDA.kext).<br/>
-Applied the AMD Vanilla CPU patches from [https://github.com/AMD-OSX/AMD_Vanilla](https://github.com/AMD-OSX/AMD_Vanilla).<br/><br/>
+Applied the AMD Vanilla CPU patches from [https://github.com/AMD-OSX/AMD_Vanilla](https://github.com/AMD-OSX/AMD_Vanilla).<br/>
 
 UPDATE: finally got the time to update the config.plist to support Monterey.<br/>
 Now I use the newest version of the AMD vanilla patches, which unfortunately require some manual steps. The config.plist has to be altered to match the actual CPU core count.<br/>
