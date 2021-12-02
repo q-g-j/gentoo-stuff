@@ -6,6 +6,7 @@ Table of contents
    * [Gentoo related](#gentoo-related)
    * [General information about my VMs](#general-information-about-my-vms)
      * [My libvirt XMLs](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
+     * [Notes on QEMU 6.1.0](#notes-on-qemu-610)
      * [CPU topology of my Ryzen 5](#lstopo)
      * [L3 cache fix](#l3-cache-fix)
      * [WLAN bridging](#wlan-bridging)
@@ -40,7 +41,6 @@ sudo layman -o https://raw.githubusercontent.com/q-g-j/gentoo-stuff/master/etc/l
 sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xml -f -a qgj
 ```
 
-
 General information about my VMs:
 =================================
 - host machine:<br/>
@@ -65,6 +65,29 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
   * enable / disable WLAN bridging<br/>
   * start / stop scream audio<br/>
   * use one or more PCI devices alternately in the host and in the guest (unbind from driver on vm start / rescan PCI bus on vm shutdown)
+
+Notes on QEMU 6.1.0:
+------------------
+
+**QEMU 6.1.0 is known to cause a few problems in both Windows and macOS VMs.**<br/><br/>
+The easiest way to avoid those is by changing the line:<br/>
+```
+<type arch="x86_64" machine="pc-q35-6.1">hvm</type>
+```
+to<br/>
+```
+<type arch="x86_64" machine="pc-q35-6.0">hvm</type>
+```
+inside the XML.<br/><br/>
+Another option is adding the following to the XML (after ``</devices>``):<br/>
+```
+<qemu:commandline>
+    <qemu:arg value="-global"/>
+    <qemu:arg value="ICH9-LPC.acpi-pci-hotplug-with-bridge-support=off"/>
+</qemu:commandline>
+```
+<br/>
+Or just skip the update.
 
 lstopo:
 -------
