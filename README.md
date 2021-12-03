@@ -218,15 +218,15 @@ Cinebench R20:
 ### Baremetal:
 
 ```
-Single CPU:    3650 pts.
-Multi CPU:      516 pts.
+Multi CPU:    3650 pts.
+Single CPU:    516 pts.
 ```
 
 ### Win11 VM:
 
 ```
-Single CPU:    3470 pts.
-Multi CPU:      493 pts.
+Multi CPU:    3470 pts.
+Single CPU:    493 pts.
 ```
 
 WLAN bridging:
