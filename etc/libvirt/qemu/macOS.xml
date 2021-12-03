@@ -47,6 +47,7 @@
     <acpi/>
     <apic/>
     <vmport state="off"/>
+    <ioapic driver="kvm"/>
   </features>
   <cpu mode="host-passthrough" check="none" migratable="off">
     <topology sockets="1" dies="1" cores="7" threads="2"/>
