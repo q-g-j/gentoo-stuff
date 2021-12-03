@@ -6,6 +6,7 @@ Table of contents
    * [Gentoo related](#gentoo-related)
    * [General information about my VMs](#general-information-about-my-vms)
      * [My libvirt XMLs](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
+     * [Cinebench R20 results](#cinebench-r20)
      * [Notes on QEMU 6.1.0](#notes-on-qemu-610)
      * [CPU topology of my Ryzen 5](#lstopo)
      * [L3 cache fix](#l3-cache-fix)
@@ -65,6 +66,23 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
   * enable / disable WLAN bridging<br/>
   * start / stop scream audio<br/>
   * use one or more PCI devices alternately in the host and in the guest (unbind from driver on vm start / rescan PCI bus on vm shutdown)
+
+Cinebench R20:
+--------------
+
+### Baremetal:
+
+```
+Single CPU:    3650 pts.
+Multi CPU:      516 pts.
+```
+
+### Win11 VM:
+
+```
+Single CPU:    3470 pts.
+Multi CPU:      493 pts.
+```
 
 Notes on QEMU 6.1.0:
 ------------------
