@@ -9,12 +9,12 @@ Table of contents
      * [Notes on QEMU 6.1.0](#notes-on-qemu-610)
      * [CPU topology of my Ryzen 5](#cpu-topology)
      * [L3 cache fix](#l3-cache-fix)
-     * [Cinebench R20 results](#cinebench-r20)
      * [WLAN bridging](#wlan-bridging)
        * [Description](#description)
        * [Requirements](#requirements)
        * [Instructions](#instructions)
    * [Notes on the Windows VM](#notes-on-the-windows-vm)
+     * [Cinebench R20 results](#cinebench-r20)
      * [ACPI table patch (for hiding QEMU)](#acpi-table-patch)
      * [Scream audio via ALSA](#scream-audio-via-alsa)
    * [Notes on the macOS VM](#notes-on-the-macos-vm)
@@ -212,23 +212,6 @@ L3 Cache:
     Latency:    10.4  ns
 ```
 
-Cinebench R20:
---------------
-
-### Baremetal:
-
-```
-Multi CPU:    3650 pts.
-Single CPU:    516 pts.
-```
-
-### Win11 VM:
-
-```
-Multi CPU:    3470 pts. (95,1 %)
-Single CPU:    493 pts. (95,5 %)
-```
-
 WLAN bridging:
 ==============
 *(libvirt [hook](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) function *"wlan_bridge*"):*
@@ -282,6 +265,23 @@ Also change `OVMF_CODE.fd` to `OVMF_CODE.secboot.fd`.
 - enabled Message-Signaled Interrupt mode for the HDMI audio PCI interrupt with *MSI mode utility* ([download](https://github.com/q-g-j/gentoo-stuff/blob/master/win11/MSI_util/MSI_util_v3.zip?raw=true)) to get rid of sound cracklings (run as Administrator)
 - using [Looking Glass](https://looking-glass.io/) (needs IVSHMEM device: [see here](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Using_Looking_Glass_to_stream_guest_screen_to_the_host)) for remote desktop from Linux to Windows
 - using [Scream](https://github.com/duncanthrax/scream) via network for audio in the guest (in alsa mode). See [below](https://github.com/q-g-j/gentoo-stuff#scream-audio-via-alsa) for instructions
+
+Cinebench R20:
+--------------
+
+### Baremetal:
+
+```
+Multi CPU:    3650 pts.
+Single CPU:    516 pts.
+```
+
+### Win11 VM:
+
+```
+Multi CPU:    3470 pts. (95,1 %)
+Single CPU:    493 pts. (95,5 %)
+```
 
 ACPI table patch
 ----------------
