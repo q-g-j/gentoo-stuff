@@ -225,8 +225,8 @@ Single CPU:    516 pts.
 ### Win11 VM:
 
 ```
-Multi CPU:    3470 pts.
-Single CPU:    493 pts.
+Multi CPU:    3470 pts. (95,1 %)
+Single CPU:    493 pts. (95,5 %)
 ```
 
 WLAN bridging:
