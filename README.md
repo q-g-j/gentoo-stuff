@@ -6,10 +6,10 @@ Table of contents
    * [Gentoo related](#gentoo-related)
    * [General information about my VMs](#general-information-about-my-vms)
      * [My libvirt XMLs](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
-     * [Cinebench R20 results](#cinebench-r20)
      * [Notes on QEMU 6.1.0](#notes-on-qemu-610)
-     * [CPU topology of my Ryzen 5](#lstopo)
+     * [CPU topology of my Ryzen 5](#cpu-topology)
      * [L3 cache fix](#l3-cache-fix)
+     * [Cinebench R20 results](#cinebench-r20)
      * [WLAN bridging](#wlan-bridging)
        * [Description](#description)
        * [Requirements](#requirements)
@@ -67,23 +67,6 @@ Disabling hyper-v enlightenments like vapic, stimer and synic should not be nece
   * start / stop scream audio<br/>
   * use one or more PCI devices alternately in the host and in the guest (unbind from driver on vm start / rescan PCI bus on vm shutdown)
 
-Cinebench R20:
---------------
-
-### Baremetal:
-
-```
-Single CPU:    3650 pts.
-Multi CPU:      516 pts.
-```
-
-### Win11 VM:
-
-```
-Single CPU:    3470 pts.
-Multi CPU:      493 pts.
-```
-
 Notes on QEMU 6.1.0:
 ------------------
 
@@ -107,11 +90,17 @@ Another option is adding the following to the XML (after ``</devices>``):<br/>
 <br/>
 Or just skip the update.
 
-lstopo:
--------
+CPU Topology:
+-------------
+
+**command:**
+
+```
+lstopo -p
+```
+
 *(from sys-apps/hwloc)*<br/><br/>
 <img src="https://github.com/q-g-j/gentoo-stuff/raw/master/lstopo.svg" width="600">
-
 
 L3 Cache fix:
 -------------
@@ -221,6 +210,23 @@ L3 Cache:
     Write:    476.64 GB/s
     Copy:     257.79 GB/s
     Latency:    10.4  ns
+```
+
+Cinebench R20:
+--------------
+
+### Baremetal:
+
+```
+Single CPU:    3650 pts.
+Multi CPU:      516 pts.
+```
+
+### Win11 VM:
+
+```
+Single CPU:    3470 pts.
+Multi CPU:      493 pts.
 ```
 
 WLAN bridging:
