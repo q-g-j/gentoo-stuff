@@ -23,7 +23,7 @@ cpus="0 1 2 3 4 5 6 7 8 9 10 11"
 
 # WLAN bridging (used by "wlan_bridge start|stop" and "wlan_bridge_iptables start|stop")
 wlan_devname="wlan0"
-create_bridge=1                     # 0: use an existing bridge; 1: create a new bridge
+create_bridge=1                     # "0": use an existing bridge; "1": create a new bridge
 bridge_devname="wlanbridge"         # the name of the bridge. If "$create_bridge" is set to "0", this device must already exist!
 bridge_ip="192.168.100.201/24"      # will be used as the guest gateway / DNS server and the dnsmasq DHCP server
 dhcp_range_begin="192.168.100.202"  # make sure, that these IPs are free in your router
@@ -35,7 +35,7 @@ forward_hostnames="
 192.168.100.101  osmc
 "
 
-wsdd_installed="1"                  # then restart the wsdd service after creating the bridge
+wsdd_installed="1"                  # "1": restart the wsdd service after creating the bridge
 
 # Total amount of hugepages in GB for all guests (used by "hugepages start|stop")
 # Hugepages will only be activated once, even with multiple vms running - and
