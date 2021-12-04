@@ -35,6 +35,8 @@ forward_hostnames="
 192.168.100.101  osmc
 "
 
+wsdd_installed="1"                  # then restart the wsdd service after creating the bridge
+
 # Total amount of hugepages in GB for all guests (used by "hugepages start|stop")
 # Hugepages will only be activated once, even with multiple vms running - and
 # deactivated, when the last vm is shutdown.
@@ -153,82 +155,87 @@ hugepages() {
 # All VMs will be on the same subnet as the host - starting from $dhcp_range_begin
 wlan_bridge() {
     if [ "$(ps ax | grep qemu-system-x86_64 | grep -v grep | grep "debug-threads=on")" == "" ]; then
-		case $1 in start)
-			if [ $create_bridge -eq 1 ]; then
-				# create the bridge:
-				ip link add name $bridge_devname type bridge
-				ip addr add $bridge_ip dev $bridge_devname
-				ip link set dev $bridge_devname up
-			elif [ "$(ip link | grep $bridge_devname)" == "" ]; then
-				exit 1
-			fi
+	case $1 in start)
+	    if [ $create_bridge -eq 1 ]; then
+		# create the bridge:
+		ip link add name $bridge_devname type bridge
+		ip addr add $bridge_ip dev $bridge_devname
+		ip link set dev $bridge_devname up
+	    elif [ "$(ip link | grep $bridge_devname)" == "" ]; then
+		exit 1
+	    fi
 
-			# start dnsmasq:
-			IFS=$'\n'
-			rm -f /tmp/_forward_hostnames.tmp
-			for i in $forward_hostnames; do echo "$i" >> /tmp/_forward_hostnames.tmp; done
-			unset IFS
-			dnsmasq \
-			--conf-file=/dev/null \
-			--interface=$bridge_devname \
-			--except-interface=virbr0 \
-			--bind-interfaces \
-			--dhcp-range=$dhcp_range_begin,$dhcp_range_end,1440h \
-			--no-hosts \
-			--addn-hosts=/tmp/_forward_hostnames.tmp \
-			--bogus-priv \
-			--no-poll \
-			--no-resolv \
-			--server=$wlan_gateway \
-			--port=53 \
-			--localise-queries \
-			--dhcp-option=44,0.0.0.0 \
-			--dhcp-option=45,0.0.0.0 \
-			--dhcp-option=46,8 \
-			--log-facility=/var/log/dnsmasq_wlanbridge.log
-			rm -f /tmp/_forward_hostnames.tmp
+	    # start dnsmasq:
+            IFS=$'\n'
+	    rm -f /tmp/_forward_hostnames.tmp
+	    for i in $forward_hostnames; do echo "$i" >> /tmp/_forward_hostnames.tmp; done
+	    unset IFS
+	    dnsmasq \
+	    --conf-file=/dev/null \
+	    --interface=$bridge_devname \
+	    --except-interface=virbr0 \
+	    --bind-interfaces \
+	    --dhcp-range=$dhcp_range_begin,$dhcp_range_end,1440h \
+	    --no-hosts \
+	    --addn-hosts=/tmp/_forward_hostnames.tmp \
+	    --bogus-priv \
+	    --no-poll \
+	    --no-resolv \
+	    --server=$wlan_gateway \
+	    --port=53 \
+	    --localise-queries \
+	    --dhcp-option=44,0.0.0.0 \
+	    --dhcp-option=45,0.0.0.0 \
+	    --dhcp-option=46,8 \
+	    --log-facility=/var/log/dnsmasq_wlanbridge.log
+	    rm -f /tmp/_forward_hostnames.tmp
 
-			# Route each single IP from $dhcp_range_begin to $dhcp_range_end through $wlan_gateway.
-			# This enables LAN and internet access.
-			START=$(echo $dhcp_range_begin | sed 's/^.*\.\([0-9]*$\)/\1/')
-			END=$(echo $dhcp_range_end | sed 's/^.*\.\([0-9]*$\)/\1/')
-			COUNT=$((END - START))
-			RANGE_PRE=$(echo $dhcp_range_begin | sed 's/\(.*\.\)[0-9]*$/\1/')
-			NUM=0
-			for i in $(seq $((COUNT + 1))); do
-				ip rule add from ${RANGE_PRE}$((START + NUM)) table 99
-				NUM=$((NUM + 1))
-			done
-			ip route add default via $(echo $bridge_ip | sed 's%/[0-9]*$%%') dev $wlan_devname table 99
+	    # Route each single IP from $dhcp_range_begin to $dhcp_range_end through $wlan_gateway.
+	    # This enables LAN and internet access.
+	    START=$(echo $dhcp_range_begin | sed 's/^.*\.\([0-9]*$\)/\1/')
+	    END=$(echo $dhcp_range_end | sed 's/^.*\.\([0-9]*$\)/\1/')
+	    COUNT=$((END - START))
+	    RANGE_PRE=$(echo $dhcp_range_begin | sed 's/\(.*\.\)[0-9]*$/\1/')
+	    NUM=0
+	    for i in $(seq $((COUNT + 1))); do
+	        ip rule add from ${RANGE_PRE}$((START + NUM)) table 99
+	        NUM=$((NUM + 1))
+	    done
+	    ip route add default via $(echo $bridge_ip | sed 's%/[0-9]*$%%') dev $wlan_devname table 99
 
-			# start parprouted:
-			parprouted $wlan_devname $bridge_devname
-			;;
-		stop)
-			# kill parprouted:
-			pkill parprouted
+	    # start parprouted:
+	    parprouted $wlan_devname $bridge_devname
 
-			# kill dnsmasq:
-			kill $(ps ax | grep -e "dnsmasq --conf-file=/dev/null" | grep $bridge_devname | grep -v grep | awk '{ print $1 }')
+	    if [ $wsdd_installed -eq 1 ]; then
+	        # restart wsdd:
+	        systemctl restart wsdd
+	    fi
+	    ;;
+	stop)
+	    # kill parprouted:
+	    pkill parprouted
 
-			START=$(echo $dhcp_range_begin | sed 's/^.*\.\([0-9]*$\)/\1/')
-			END=$(echo $dhcp_range_end | sed 's/^.*\.\([0-9]*$\)/\1/')
-			COUNT=$((END - START))
-			RANGE_PRE=$(echo $dhcp_range_begin | sed 's/\(.*\.\)[0-9]*$/\1/')
-			NUM=0
-			for i in $(seq $((COUNT + 1))); do
-				ip rule del from ${RANGE_PRE}$((START + NUM)) table 99
-				NUM=$((NUM + 1))
-			done
-			ip route del default via $(echo $bridge_ip | sed 's%/[0-9]*$%%') dev $wlan_devname table 99
+	    # kill dnsmasq:
+	    kill $(ps ax | grep -e "dnsmasq --conf-file=/dev/null" | grep $bridge_devname | grep -v grep | awk '{ print $1 }')
 
-			if [ $create_bridge -eq 1 ]; then
-				# delete the bridge device:
-				ip link delete $bridge_devname
-			fi
-			;;
-		esac
-	fi
+	    START=$(echo $dhcp_range_begin | sed 's/^.*\.\([0-9]*$\)/\1/')
+	    END=$(echo $dhcp_range_end | sed 's/^.*\.\([0-9]*$\)/\1/')
+	    COUNT=$((END - START))
+	    RANGE_PRE=$(echo $dhcp_range_begin | sed 's/\(.*\.\)[0-9]*$/\1/')
+	    NUM=0
+	    for i in $(seq $((COUNT + 1))); do
+	        ip rule del from ${RANGE_PRE}$((START + NUM)) table 99
+	        NUM=$((NUM + 1))
+	    done
+	    ip route del default via $(echo $bridge_ip | sed 's%/[0-9]*$%%') dev $wlan_devname table 99
+
+	    if [ $create_bridge -eq 1 ]; then
+	        # delete the bridge device:
+	        ip link delete $bridge_devname
+	    fi
+	    ;;
+	esac
+    fi
 }
 
 # WLAN bridging via arp (old method which uses iptables instead of a routing table):
@@ -277,6 +284,11 @@ wlan_bridge_iptables() {
 
             # start parprouted:
             parprouted $wlan_devname $bridge_devname
+
+	    if [ $wsdd_installed -eq 1 ]; then
+	        # restart wsdd:
+	        systemctl restart wsdd
+	    fi
             ;;
         stop)
             # kill parprouted:
