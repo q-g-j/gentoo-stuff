@@ -1,3 +1,4 @@
+app-admin/s-tui
 app-crypt/sirikali
 app-crypt/swtpm
 	dev-libs/libtpms
@@ -30,7 +31,7 @@ dev-python/spyder
 	dev-python/python-lsp-server
 		dev-python/flake8
 			dev-python/pyflakes
-dev-qt/qt-creator
+=dev-qt/qt-creator-4*
 	dev-qt/qtquicktimeline
 
 games-board/pychess
