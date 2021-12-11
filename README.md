@@ -256,14 +256,13 @@ The hook script creates the bridge device and starts the services on demand. Whe
 Notes on the Windows VM:
 ========================
 - libvirt XML: [win11.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml).
-- Windows 11 needs TPM 2.0 enabled. This can easily be emulated: install *app-crypt/swtpm* and add these lines to the xml<br/>
-(in `<devices>`):
+- Windows 11 needs TPM 2.0 enabled. This can easily be emulated:<br/>
+Change `OVMF_CODE.fd` to `OVMF_CODE.secboot.fd`, install *app-crypt/swtpm* and add these lines to the xml (in `<devices>`):
 ```
 <tpm model="tpm-tis">
     <backend type="emulator" version="2.0"/>
 </tpm>
 ```
-Also change `OVMF_CODE.fd` to `OVMF_CODE.secboot.fd`.
 - Halo Infinite needs this setting:
 ```
 <cpu mode ...>
