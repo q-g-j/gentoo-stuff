@@ -256,12 +256,21 @@ The hook script creates the bridge device and starts the services on demand. Whe
 Notes on the Windows VM:
 ========================
 - libvirt XML: [win11.xml](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml).
-- Windows 11 needs TPM 2.0 enabled. This can easily be emulated: install *app-crypt/swtpm* and add these lines to the xml (in "devices"):<br/>
-`<tpm model="tpm-tis">`<br/>
-`<backend type="emulator" version="2.0"/>`<br/>
-`</tpm>`<br/>
+- Windows 11 needs TPM 2.0 enabled. This can easily be emulated: install *app-crypt/swtpm* and add these lines to the xml<br/>
+(in `<devices>`):
+```
+<tpm model="tpm-tis">
+    <backend type="emulator" version="2.0"/>
+</tpm>
+```
 Also change `OVMF_CODE.fd` to `OVMF_CODE.secboot.fd`.
-- probably not related to virtualization since it seems to be a [known problem](https://www.reddit.com/r/AMDHelp/search/?q=driver%20timeout&restrict_sr=1&sr_nsfw=): had to stick with an older AMD driver (I chose [21.6.1](https://www.amd.com/en/support/kb/release-notes/rn-rad-win-21-6-1)), because newest versions give me frequent driver timeouts and occasionally extremely low fps while running certain games.
+- Halo Infinite needs this setting:
+```
+<cpu mode ...>
+    ...
+    <feature policy="disable" name="hypervisor"/>
+</cpu>
+```
 - enabled Message-Signaled Interrupt mode for the HDMI audio PCI interrupt with *MSI mode utility* ([download](https://github.com/q-g-j/gentoo-stuff/blob/master/win11/MSI_util/MSI_util_v3.zip?raw=true)) to get rid of sound cracklings (run as Administrator)
 - using [Looking Glass](https://looking-glass.io/) (needs IVSHMEM device: [see here](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Using_Looking_Glass_to_stream_guest_screen_to_the_host)) for remote desktop from Linux to Windows
 - using [Scream](https://github.com/duncanthrax/scream) via network for audio in the guest (in alsa mode). See [below](https://github.com/q-g-j/gentoo-stuff#scream-audio-via-alsa) for instructions
@@ -342,11 +351,11 @@ In mac OS open a terminal:<br/>
 A reboot is required.
 - Removed BaseImage.img in libvirt xml before restarting the vm.
 - enabled host-passthrough support for my Ryzen CPU. Needed the patches from this [site](https://github.com/AMD-OSX/AMD_Vanilla). You can use my already patched config.plist or OpenCore image: See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore).<br/>
-You can now use host-passthrough as well as the topoext feature to pass cores and threads correctly. Of course you need to remove:<br/>
-`<qemu:arg value='-cpu'/>`<br/>
-`<qemu:arg value='Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+pcid,+ssse3,+sse4.2,+popcnt,+avx,+aes,+xsave,+xsaveopt,-x2apic,check'/>`<br/>
-From<br/>
-`<qemu:commandline>`<br/>
+You can now use host-passthrough as well as the topoext feature to pass cores and threads correctly. Of course you need to remove:
+```
+<qemu:arg value='-cpu'/>
+<qemu:arg value='Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+pcid,+ssse3,+sse4.2,+popcnt,+avx,+aes,+xsave,+xsaveopt,-x2apic,check'/>
+```
 - Update: my old USB sound card (Behringer UCA-222) is working perfectly - though NOT via USB passthrough (LOTS of crackling), but when it's connected to the passed USB3 PCI controller
 
 macOS VM with GPU passthrough:
