@@ -34,7 +34,9 @@ Gentoo related:
 *dlang*<br/>
 *guru*<br/>
 *holgersson-overlay*<br/>
-[*qgj*](https://github.com/q-g-j/qgj-overlay)
+[*qgj*](https://github.com/q-g-j/qgj-overlay)<br/>
+*qt*<br/>
+*snapd*
 
 The [*cockpit*](https://github.com/orumin/cockpit-overlay.git) overlay and my overlay ([*qgj*](https://github.com/q-g-j/qgj-overlay)) need to be added manually:<br/>
 ```

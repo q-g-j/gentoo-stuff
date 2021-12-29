@@ -6,15 +6,19 @@ try:
     import ttk
     import tkFileDialog as fd
     import tkMessageBox as mb
-    from tkFont import Font
+    from tkFont import Font, families
     from tkColorChooser import askcolor as ac
 except:
     import tkinter as tk
     import tkinter.ttk as ttk
     from tkinter import filedialog as fd
     from tkinter import messagebox as mb
-    from tkinter.font import Font
+    from tkinter.font import Font, families
     from tkinter.colorchooser import askcolor as ac
+try:
+    unicode
+except NameError:  # Python 3
+    unicode = str
 # Add this script's dir to the local PATH var - may improve import consistency
 sys.path.append(os.path.abspath(os.path.dirname(os.path.realpath(__file__))))
 from Scripts import plist, plistwindow
@@ -76,44 +80,49 @@ class ProperTree:
         int_label = tk.Label(self.settings_window,text="Integer Display Default:")
         int_label.grid(row=8,column=0,sticky="w",padx=10)
         self.int_type_menu.grid(row=8,column=1,sticky="we",padx=10)
+        self.bool_type_string = tk.StringVar(self.settings_window)
+        self.bool_type_menu = tk.OptionMenu(self.settings_window, self.bool_type_string, "True/False", "YES/NO", "On/Off", "1/0", command=self.change_bool_type)
+        bool_label = tk.Label(self.settings_window,text="Boolean Display Default:")
+        bool_label.grid(row=9,column=0,sticky="w",padx=10)
+        self.bool_type_menu.grid(row=9,column=1,sticky="we",padx=10)
         self.snapshot_string = tk.StringVar(self.settings_window)
         self.snapshot_menu = tk.OptionMenu(self.settings_window, self.snapshot_string, "Latest", command=self.change_snapshot_version)
         snapshot_label = tk.Label(self.settings_window,text="Snapshot OC Version:")
-        snapshot_label.grid(row=9,column=0,sticky="w",padx=10)
-        self.snapshot_menu.grid(row=9,column=1,sticky="we",padx=10)
+        snapshot_label.grid(row=10,column=0,sticky="w",padx=10)
+        self.snapshot_menu.grid(row=10,column=1,sticky="we",padx=10)
         self.schema_check = tk.Checkbutton(self.settings_window,text="Force Update Snapshot Schema",variable=self.force_schema,command=self.schema_command)
-        self.schema_check.grid(row=10,column=0,columnspan=2,sticky="w",padx=10)
+        self.schema_check.grid(row=11,column=0,columnspan=2,sticky="w",padx=10)
         sep = ttk.Separator(self.settings_window,orient="horizontal")
-        sep.grid(row=11,column=0,columnspan=2,sticky="we",padx=10,pady=10)
+        sep.grid(row=12,column=0,columnspan=2,sticky="we",padx=10,pady=10)
         r1_label = tk.Label(self.settings_window,text="Alternating Row Color #1:")
-        r1_label.grid(row=12,column=0,sticky="w",padx=10)
+        r1_label.grid(row=13,column=0,sticky="w",padx=10)
         self.r1_canvas = tk.Canvas(self.settings_window, height=20, width=30, background="black", relief="groove", bd=2)
-        self.r1_canvas.grid(row=12,column=1,sticky="we",padx=10)
+        self.r1_canvas.grid(row=13,column=1,sticky="we",padx=10)
         r2_label = tk.Label(self.settings_window,text="Alternating Row Color #2:")
-        r2_label.grid(row=13,column=0,sticky="w",padx=10)
+        r2_label.grid(row=14,column=0,sticky="w",padx=10)
         self.r2_canvas = tk.Canvas(self.settings_window, height=20, width=30, background="black", relief="groove", bd=2)
-        self.r2_canvas.grid(row=13,column=1,sticky="we",padx=10)
+        self.r2_canvas.grid(row=14,column=1,sticky="we",padx=10)
         r3_label = tk.Label(self.settings_window,text="Background Color:")
-        r3_label.grid(row=14,column=0,sticky="w",padx=10)
+        r3_label.grid(row=15,column=0,sticky="w",padx=10)
         self.bg_canvas = tk.Canvas(self.settings_window, height=20, width=30, background="black", relief="groove", bd=2)
-        self.bg_canvas.grid(row=14,column=1,sticky="we",padx=10)
+        self.bg_canvas.grid(row=15,column=1,sticky="we",padx=10)
         r4_label = tk.Label(self.settings_window,text="Highlight Color:")
-        r4_label.grid(row=15,column=0,sticky="w",padx=10)
+        r4_label.grid(row=16,column=0,sticky="w",padx=10)
         self.hl_canvas = tk.Canvas(self.settings_window, height=20, width=30, background="black", relief="groove", bd=2)
-        self.hl_canvas.grid(row=15,column=1,sticky="we",padx=10)
+        self.hl_canvas.grid(row=16,column=1,sticky="we",padx=10)
         self.r1_inv_check = tk.IntVar()
         self.r1_inv = tk.Checkbutton(self.settings_window,text="Invert Row #1 Text Color",variable=self.r1_inv_check,command=self.check_r1_invert_command)
-        self.r1_inv.grid(row=16,column=1,sticky="w",padx=10)
+        self.r1_inv.grid(row=17,column=1,sticky="w",padx=10)
         self.r2_inv_check = tk.IntVar()
         self.r2_inv = tk.Checkbutton(self.settings_window,text="Invert Row #2 Text Color",variable=self.r2_inv_check,command=self.check_r2_invert_command)
-        self.r2_inv.grid(row=17,column=1,sticky="w",padx=10)
+        self.r2_inv.grid(row=18,column=1,sticky="w",padx=10)
         self.hl_inv_check = tk.IntVar()
         self.hl_inv = tk.Checkbutton(self.settings_window,text="Invert Highlight Text Color",variable=self.hl_inv_check,command=self.check_hl_invert_command)
-        self.hl_inv.grid(row=18,column=1,sticky="w",padx=10)
+        self.hl_inv.grid(row=19,column=1,sticky="w",padx=10)
         self.drag_label = tk.Label(self.settings_window,text="Drag Dead Zone (1-100 pixels):")
-        self.drag_label.grid(row=19,column=0,sticky="w",padx=10)
+        self.drag_label.grid(row=20,column=0,sticky="w",padx=10)
         self.drag_scale = tk.Scale(self.settings_window,from_=1,to=100,orient=tk.HORIZONTAL)
-        self.drag_scale.grid(row=19,column=1,sticky="we",padx=10)
+        self.drag_scale.grid(row=20,column=1,sticky="we",padx=10)
 
         self.default_font = Font(font='TkTextFont')
         self.custom_font = tk.IntVar()
@@ -121,21 +130,31 @@ class ProperTree:
         self.font_string = tk.StringVar()
         self.font_spinbox = tk.Spinbox(self.settings_window,from_=1,to=128,textvariable=self.font_string)
         self.font_string.trace("w",self.update_font)
-        self.font_check.grid(row=20,column=0,sticky="w",padx=10)
-        self.font_spinbox.grid(row=20,column=1,sticky="we",padx=10)
-        
+        self.font_check.grid(row=21,column=0,sticky="w",padx=10)
+        self.font_spinbox.grid(row=21,column=1,sticky="we",padx=10)
+
+        # Custom font picker - wacky implementation.
+        self.font_var = tk.IntVar()
+        self.font_family  = tk.StringVar()
+        self.font_custom_check = tk.Checkbutton(self.settings_window,text="Use Custom Font",variable=self.font_var,command=self.font_select)
+        self.font_custom = ttk.Combobox(self.settings_window,state="readonly",textvariable=self.font_family,values=sorted(families()))
+        self.font_custom.bind('<<ComboboxSelected>>',self.font_pick)
+        self.font_family.trace("w",self.update_font_family)
+        self.font_custom_check.grid(row=22,column=0,stick="w",padx=10)
+        self.font_custom.grid(row=22,column=1,sticky="we",padx=10)
+
         sep_theme = ttk.Separator(self.settings_window,orient="horizontal")
-        sep_theme.grid(row=21,column=0,columnspan=2,sticky="we",padx=10,pady=10)
+        sep_theme.grid(row=23,column=0,columnspan=2,sticky="we",padx=10,pady=10)
         r5_label = tk.Label(self.settings_window,text="Default Theme Options:")
-        r5_label.grid(row=22,column=0,sticky="w",padx=10)
+        r5_label.grid(row=24,column=0,sticky="w",padx=10)
         default_high = tk.Button(self.settings_window,text="Reset Highlight",command=lambda:self.swap_colors("highlight"))
-        default_high.grid(row=23,column=0,sticky="we",padx=10)
+        default_high.grid(row=25,column=0,sticky="we",padx=10)
         default_light = tk.Button(self.settings_window,text="Light Mode Defaults",command=lambda:self.swap_colors("light"))
-        default_light.grid(row=22,column=1,sticky="we",padx=10)
+        default_light.grid(row=24,column=1,sticky="we",padx=10)
         default_dark = tk.Button(self.settings_window,text="Dark Mode Defaults",command=lambda:self.swap_colors("dark"))
-        default_dark.grid(row=23,column=1,sticky="we",padx=10)
+        default_dark.grid(row=25,column=1,sticky="we",padx=10)
         reset_settings = tk.Button(self.settings_window,text="Reset All To Defaults",command=self.reset_settings)
-        reset_settings.grid(row=24,column=1,sticky="we",padx=10,pady=10)
+        reset_settings.grid(row=26,column=1,sticky="we",padx=10,pady=10)
 
         # Setup the color picker click methods
         self.r1_canvas.bind("<ButtonRelease-1>",lambda x:self.pick_color("alternating_color_1",self.r1_canvas))
@@ -168,14 +187,10 @@ class ProperTree:
         }
 
         # Setup the from/to option menus
-        f_title = tk.StringVar(self.tk)
-        t_title = tk.StringVar(self.tk)
-        f_title.set("Base64")
-        t_title.set("Hex")
-        f_option = tk.OptionMenu(self.tk, f_title, "Ascii", "Base64", "Decimal", "Hex", command=self.change_from_type)
-        t_option = tk.OptionMenu(self.tk, t_title, "Ascii", "Base64", "Decimal", "Hex", command=self.change_to_type)
-        self.from_type = "Base64"
-        self.to_type   = "Hex"
+        self.f_title = tk.StringVar(self.tk)
+        self.t_title = tk.StringVar(self.tk)
+        f_option = tk.OptionMenu(self.tk, self.f_title, "Ascii", "Base64", "Decimal", "Hex", command=self.change_from_type)
+        t_option = tk.OptionMenu(self.tk, self.t_title, "Ascii", "Base64", "Decimal", "Hex", command=self.change_to_type)
         f_option.grid(row=0,column=1,sticky="we")
         t_option.grid(row=1,column=1,sticky="we")
 
@@ -193,6 +208,8 @@ class ProperTree:
 
         self.c_button = tk.Button(self.tk, text="Convert", command=self.convert_values)
         self.c_button.grid(row=2,column=3,sticky="e",padx=10,pady=10)
+        self.s_button = tk.Button(self.tk, text="To <--> From", command=self.swap_convert)
+        self.s_button.grid(row=2,column=0,sticky="w",padx=10,pady=10)
 
         self.f_text.bind("<Return>", self.convert_values)
         self.f_text.bind("<KP_Enter>", self.convert_values)
@@ -236,13 +253,16 @@ class ProperTree:
 
         self.default_windows = (self.tk,self.settings_window)
 
+        self.recent_menu = None
         if str(sys.platform) == "darwin":
             # Setup the top level menu
             file_menu = tk.Menu(self.tk)
             main_menu = tk.Menu(self.tk)
+            self.recent_menu = tk.Menu(self.tk)
             main_menu.add_cascade(label="File", menu=file_menu)
             file_menu.add_command(label="New (Cmd+N)", command=self.new_plist)
             file_menu.add_command(label="Open (Cmd+O)", command=self.open_plist)
+            file_menu.add_cascade(label="Open Recent", menu=self.recent_menu)
             file_menu.add_command(label="Save (Cmd+S)", command=self.save_plist)
             file_menu.add_command(label="Save As... (Cmd+Shift+S)", command=self.save_plist_as)
             file_menu.add_command(label="Duplicate (Cmd+D)", command=self.duplicate_plist)
@@ -278,7 +298,7 @@ class ProperTree:
         self.tk.bind_all("<{}-m>".format(key), self.strip_comments)
         self.tk.bind_all("<{}-e>".format(key), self.strip_disabled)
         self.tk.bind_all("<{}-r>".format(key), self.oc_snapshot)
-        self.tk.bind_all("<Shift-{}-R>".format(key) if tk.TkVersion >= 8.6 and str(sys.platform)=="darwin" else "<{}-R>".format(key), self.oc_clean_snapshot)
+        self.tk.bind_all("<Shift-{}-r>".format(key) if tk.TkVersion >= 8.6 and str(sys.platform)=="darwin" else "<{}-R>".format(key), self.oc_clean_snapshot)
         self.tk.bind_all("<{}-l>".format(key), self.reload_from_disk)
         if not str(sys.platform) == "darwin":
             # Rewrite the default Command-Q command
@@ -311,6 +331,8 @@ class ProperTree:
         # invert_row2_text_color:     bool
         # invert_hl_text_color:       bool
         # drag_dead_zone:             pixel distance before drag starts (default is 20)
+        # open_recent:                list, paths recently opened
+        # recent_max:                 int, max number of recent items
         #
 
         self.settings = {}
@@ -334,7 +356,14 @@ class ProperTree:
         self.allowed_types = ("XML","Binary")
         self.allowed_data  = ("Hex","Base64")
         self.allowed_int   = ("Decimal","Hex")
+        self.allowed_bool  = ("True/False","YES/NO","On/Off","1/0")
+        self.allowed_conv  = ("Ascii","Base64","Decimal","Hex")
         self.update_settings()
+
+        self.case_insensitive = self.get_case_insensitive()
+        # Normalize the pathing for Open Recents
+        self.normpath_recents()
+        if str(sys.platform) == "darwin": self.update_recents()
         
         # Wait before opening a new document to see if we need to.
         # This was annoying to debug, but seems to work.
@@ -343,6 +372,18 @@ class ProperTree:
 
         # Start our run loop
         tk.mainloop()
+
+    def get_case_insensitive(self):
+        # Helper function to check our file path, change case, and see if os.path.exists() still works
+        our_path = os.path.realpath(__file__)
+        # Walk our chars and find the first alpha character
+        # then reverse it's case - and see if the path still exists
+        for i,x in enumerate(our_path):
+            if x.isalpha():
+                x = x.upper() if x.islower() else x.lower()
+                return os.path.exists(our_path[:i]+x+our_path[i+1:])
+        # If we got here - there were no alpha chars in the path - we'll just uh... return False to be safe
+        return False
 
     def check_dark_mode(self):
         check_dark = self.get_dark()
@@ -425,6 +466,9 @@ class ProperTree:
     def change_int_type(self, event = None):
         self.settings["display_int_as"] = self.int_type_string.get()
 
+    def change_bool_type(self, event = None):
+        self.settings["display_bool_as"] = self.bool_type_string.get()
+
     def change_snapshot_version(self, event = None):
         self.settings["snapshot_version"] = self.snapshot_string.get().split(" ")[0]
 
@@ -439,11 +483,36 @@ class ProperTree:
             self.settings.pop("font_size",None)
         self.update_font()
 
+    def font_select(self, event = None):
+        if self.font_var.get():
+            self.settings["use_custom_font"] = True
+            self.settings["font_family"] = self.font_family.get()
+            self.font_custom.configure(state='readonly')
+        else:
+            self.settings["use_custom_font"] = False
+            self.font_custom.configure(state='disabled')
+            self.settings.pop("font_family",None)
+        self.update_font_family()
+
+    def font_pick(self, event = None):
+        font_family = self.font_family.get()
+        if self.settings["font_family"] == font_family:
+            return
+        self.settings["font_family"] = font_family
+        self.update_font_family()
+
     def update_font(self, var = None, blank = None, trace_mode = None):
         try: font_size = int(self.font_string.get())
         except: return
         self.settings["font_size"] = font_size
         self.update_fonts()
+
+    def update_font_family(self, event = None, blank = None, trace_mode = None):
+        windows = self.stackorder(self.tk)
+        if not len(windows): return
+        for window in windows:
+            if window in self.default_windows: continue
+            window.set_font_family()
 
     def pick_color(self, color_name = None, canvas = None):
         if not color_name or not canvas: return # uh wut?
@@ -485,8 +554,14 @@ class ProperTree:
         self.data_type_string.set(dat_type if dat_type in self.allowed_data else self.allowed_data[0])
         int_type = self.settings.get("display_int_as",self.allowed_int[0])
         self.int_type_string.set(int_type if int_type in self.allowed_int else self.allowed_int[0])
+        bool_type = self.settings.get("display_bool_as",self.allowed_bool[0])
+        self.bool_type_string.set(bool_type if bool_type in self.allowed_bool else self.allowed_bool[0])
+        conv_f_type = self.settings.get("convert_from_type",self.allowed_conv[1])
+        self.f_title.set(conv_f_type if conv_f_type in self.allowed_conv else self.allowed_conv[1])
+        conv_t_type = self.settings.get("convert_to_type",self.allowed_conv[-1])
+        self.t_title.set(conv_t_type if conv_t_type in self.allowed_conv else self.allowed_conv[-1])
         self.snapshot_menu["menu"].delete(0,"end")
-        snapshot_versions = ["{} -> {}".format(x["min_version"],x.get("max_version","Current")) for x in self.snapshot_data if "min_version" in x and len(x["min_version"])]
+        snapshot_versions = ["{} -> {}".format(x["min_version"],x.get("max_version","Current")) if x["min_version"]!=x.get("max_version","Current") else x["min_version"] for x in self.snapshot_data if "min_version" in x and len(x["min_version"])]
         snapshot_choices = ["Latest"] + sorted(snapshot_versions,reverse=True)
         for choice in snapshot_choices:
             self.snapshot_menu["menu"].add_command(label=choice,command=tk._setit(self.snapshot_string,choice,self.change_snapshot_version))
@@ -515,7 +590,10 @@ class ProperTree:
         self.drag_scale.set(self.settings.get("drag_dead_zone",20))
         self.font_string.set(self.settings.get("font_size",self.default_font["size"]))
         self.custom_font.set(self.settings.get("use_custom_font_size",False))
+        self.font_family.set(self.settings.get("font_family",self.default_font.actual()["family"]))
+        self.font_var.set(self.settings.get("use_custom_font",False))
         self.font_command()
+        self.font_select()
         self.update_colors()
 
     def update_canvas_text(self, canvas = None):
@@ -555,13 +633,81 @@ class ProperTree:
             if window in self.default_windows: continue
             window.set_colors()
 
+    def compare_paths(self,check,path):
+        if not isinstance(path,(str,unicode,list)): return False
+        if self.case_insensitive:
+            check = check.lower()
+            path = path.lower() if isinstance(path,(str,unicode)) else [x.lower() for x in path]
+        return check in path if isinstance(path,list) else check == path
+
+    def normpath_recents(self):
+        normalized = [os.path.normpath(x) for x in self.settings.get("open_recent",[])]
+        new_paths = []
+        for path in normalized:
+            if self.compare_paths(path,new_paths): continue # Don't add duplicates
+            new_paths.append(path)
+        self.settings["open_recent"] = new_paths
+
+    def update_recents(self):
+        # Helper to figure out which menu(s) to update, and actually update them
+        targets = [self] if str(sys.platform) == "darwin" else [w for w in self.stackorder(self.tk) if not w in self.default_windows]
+        for target in targets:
+            self.update_recents_for_target(target)
+
+    def update_recents_for_target(self,target):
+        if not hasattr(target,"recent_menu"): return # Invalid target?
+        # Helper to setup the Open Resent menu for the target menu
+        recents = self.settings.get("open_recent",[])
+        target.recent_menu.delete(0,tk.END)
+        if not len(recents):
+            target.recent_menu.add_command(label="No Recently Opened Files", state=tk.DISABLED)
+        else:
+            for recent in recents:
+                target.recent_menu.add_command(label=recent, command=lambda x=recent:self.open_recent(x))
+        # Add the separator and clear option
+        target.recent_menu.add_separator()
+        target.recent_menu.add_command(label="Clear Recently Opened", command=self.clear_recents)
+
+    def add_recent(self,recent):
+        # Add a new item to our Open Recent list, and make sure our list
+        # doesn't grow beyond the recent_max value
+        recent = os.path.normpath(recent) # Normalize the pathing
+        recents = [x for x in self.settings.get("open_recent",[]) if not self.compare_paths(recent,x)]
+        recents.insert(0,recent)
+        recent_max = self.settings.get("recent_max",10)
+        recents = recents[:recent_max]
+        self.settings["open_recent"] = recents
+        self.update_recents()
+
+    def rem_recent(self,recent):
+        # Removes a recent from the Open Recent list if it exists
+        recent = os.path.normpath(recent) # Normalize the pathing
+        recents = [x for x in self.settings.get("open_recent",[]) if not x == recent]
+        self.settings["open_recent"] = recents
+        self.update_recents()
+
+    def clear_recents(self):
+        self.settings.pop("open_recent",None)
+        self.update_recents()
+
+    def open_recent(self, path):
+        # First check if the file exists - if not, throw an error, and remove it
+        # from the recents menu
+        path = os.path.normpath(path)
+        if not (os.path.exists(path) and os.path.isfile(path)):
+            self.rem_recent(path)
+            self.tk.bell()
+            mb.showerror("An Error Occurred While Opening {}".format(os.path.basename(path)), "The path '{}' does not exist.".format(path))
+            return
+        return self.pre_open_with_path(path)
+
     def check_open(self, plists = []):
         plists = [x for x in plists if not self.regexp.search(x)]
         if isinstance(plists, list) and len(plists):
             at_least_one = False
             # Iterate the passed plists and open them
             for p in set(plists):
-                window = self.open_plist_with_path(None,p,None)
+                window = self.pre_open_with_path(p)
                 if not window: continue
                 at_least_one = True
                 if self.start_window == None:
@@ -590,7 +736,7 @@ class ProperTree:
             else:
                 current_window = None
             # Let's load the plist
-            window = self.open_plist_with_path(None,arg,current_window)
+            window = self.pre_open_with_path(arg,current_window)
             if self.start_window == None: self.start_window = window
 
     def change_hd_type(self, value):
@@ -680,11 +826,11 @@ class ProperTree:
         window.strip_disabled(event)
 
     def change_to_type(self, value):
-        self.to_type = value
+        self.settings["convert_to_type"] = value
         self.convert_values()
 
     def change_from_type(self, value):
-        self.from_type = value
+        self.settings["convert_from_type"] = value
 
     def show_window(self, window, event = None):
         if not window.winfo_viewable():
@@ -702,6 +848,31 @@ class ProperTree:
             window.geometry("+{}+{}".format(x, y))
             window.deiconify()
         window.lift()
+        self.f_text.focus_set()
+
+    def get_bytes(self, value):
+        if sys.version_info >= (3,0) and not isinstance(value,bytes):
+            # Convert to bytes
+            value = value.encode("utf-8")
+        return value
+
+    def get_string(self, value):
+        if sys.version_info >= (3,0) and not isinstance(value,(str,unicode)):
+            # Convert from bytes
+            value = value.decode("utf-8")
+        return value
+
+    def swap_convert(self, event = None):
+        # Swaps the values of the to and from conversion dropdown menus
+        t,f = self.t_title.get(),self.f_title.get()
+        self.settings["convert_to_type"] = f
+        self.settings["convert_from_type"] = t
+        self.t_title.set(f)
+        self.f_title.set(t)
+        # Move any data from the To to the From, and run the conversion
+        self.f_text.delete(0,tk.END)
+        self.f_text.insert(0,self.t_text.get())
+        self.convert_values()
 
     def convert_values(self, event = None):
         from_value = self.f_text.get()
@@ -709,7 +880,9 @@ class ProperTree:
             # Empty - nothing to convert
             return
         # Pre-check for hex potential issues
-        if self.from_type.lower() == "hex":
+        from_type = self.f_title.get().lower()
+        to_type   = self.t_title.get().lower()
+        if from_type == "hex":
             if from_value.lower().startswith("0x"):
                 from_value = from_value[2:]
             from_value = from_value.replace(" ","").replace("<","").replace(">","")
@@ -718,31 +891,36 @@ class ProperTree:
                 mb.showerror("Invalid Hex Data","Invalid character in passed hex data.") # ,parent=self.tk)
                 return
         try:
-            if self.from_type.lower() == "decimal":
+            if from_type == "decimal":
                 # Convert to hex bytes
                 from_value = "{:x}".format(int(from_value))
                 if len(from_value) % 2:
                     from_value = "0"+from_value
             # Handle the from data
-            if sys.version_info >= (3,0):
-                # Convert to bytes
-                from_value = from_value.encode("utf-8")
-            if self.from_type.lower() == "base64":
-                from_value = base64.b64decode(from_value)
-            elif self.from_type.lower() in ["hex","decimal"]:
-                from_value = binascii.unhexlify(from_value)
+            if from_type == "base64":
+                padded_from = from_value
+                from_stripped = from_value.rstrip("=")
+                if len(from_stripped) % 4 > 1: # Pad to a multiple of 4
+                    padded_from = from_stripped + "="*(4-len(from_stripped)%4)
+                if padded_from != from_value:
+                    # Changed it - update the from box, and set the from value
+                    from_value = padded_from
+                    self.f_text.delete(0,tk.END)
+                    self.f_text.insert(0,from_value)
+                from_value = base64.b64decode(self.get_bytes(from_value))
+            elif from_type in ["hex","decimal"]:
+                from_value = binascii.unhexlify(self.get_bytes(from_value))
             # Let's get the data converted
-            to_value = from_value
-            if self.to_type.lower() == "base64":
-                to_value = base64.b64encode(from_value)
-            elif self.to_type.lower() == "hex":
-                to_value = binascii.hexlify(from_value)
-            elif self.to_type.lower() == "decimal":
-                to_value = str(int(binascii.hexlify(from_value),16))
-            if sys.version_info >= (3,0) and not self.to_type.lower() == "decimal":
-                # Convert to bytes
-                to_value = to_value.decode("utf-8")
-            if self.to_type.lower() == "hex":
+            to_value = self.get_bytes(from_value)
+            if to_type == "base64":
+                to_value = base64.b64encode(self.get_bytes(from_value))
+            elif to_type == "hex":
+                to_value = binascii.hexlify(self.get_bytes(from_value))
+            elif to_type == "decimal":
+                to_value = str(int(binascii.hexlify(self.get_bytes(from_value)),16))
+            if not to_type == "decimal":
+                to_value = self.get_string(to_value)
+            if to_type == "hex":
                 # Capitalize it, and pad with spaces
                 to_value = "{}".format(" ".join((to_value[0+i:8+i] for i in range(0, len(to_value), 8))).upper())
             # Set the text box
@@ -751,6 +929,10 @@ class ProperTree:
             self.t_text.insert(0,to_value)
             self.t_text.configure(state='readonly')
         except Exception as e:
+            # Clear the text box
+            self.t_text.configure(state='normal')
+            self.t_text.delete(0,tk.END)
+            self.t_text.configure(state='readonly')
             self.tk.bell()
             mb.showerror("Conversion Error",str(e)) # ,parent=self.tk)
 
@@ -767,7 +949,9 @@ class ProperTree:
         if window in self.default_windows:
             return
         plist_data = window.nodes_to_values()
-        plistwindow.PlistWindow(self, self.tk).open_plist(None,plist_data)
+        new_window = plistwindow.PlistWindow(self, self.tk).open_plist(None,plist_data)
+        # Update the Open Recent menu
+        if str(sys.platform) != "darwin": self.update_recents_for_target(new_window)
 
     def save_plist(self, event = None):
         windows = self.stackorder(self.tk)
@@ -777,7 +961,9 @@ class ProperTree:
         window = windows[-1] # Get the last item (most recent)
         if window in self.default_windows:
             return
-        window.save_plist(event)
+        if window.save_plist(event):
+            # Saved correctly, let's ensure the path is saved in recents
+            self.add_recent(window.current_plist)
     
     def save_plist_as(self, event = None):
         windows = self.stackorder(self.tk)
@@ -787,7 +973,9 @@ class ProperTree:
         window = windows[-1] # Get the last item (most recent)
         if window in self.default_windows:
             return
-        window.save_plist_as(event)
+        if window.save_plist_as(event):
+            # Saved correctly, let's ensure the path is saved in recents
+            self.add_recent(window.current_plist)
 
     def undo(self, event = None):
         windows = self.stackorder(self.tk)
@@ -823,10 +1011,13 @@ class ProperTree:
                 break
             number += 1
         window = plistwindow.PlistWindow(self, self.tk)
+        # Update the Open Recent menu
+        if str(sys.platform) != "darwin": self.update_recents_for_target(window)
         # Ensure our default plist and data types are reflected
         window.plist_type_string.set(self.plist_type_string.get())
         window.data_type_string.set(self.data_type_string.get())
         window.int_type_string.set(self.int_type_string.get())
+        window.bool_type_string.set(self.bool_type_string.get())
         window.open_plist(final_title.capitalize(),{}) # Created an empty root
         window.current_plist = None # Ensure it's initialized as new
         self.lift_window(window)
@@ -838,9 +1029,13 @@ class ProperTree:
         path = fd.askopenfilename(title = "Select plist file") # ,parent=current_window) # Apparently parent here breaks on 10.15?
         if not len(path): return # User cancelled - bail
         path = os.path.realpath(os.path.expanduser(path))
-        current_window = None
+        return self.pre_open_with_path(path)
+
+    def pre_open_with_path(self, path, current_window = None):
+        if not path: return # Hmmm... shouldn't happen, but just in case
+        path = os.path.realpath(os.path.expanduser(path))
         windows = self.stackorder(self.tk)
-        if len(windows) == 1 and windows[0] == self.start_window and windows[0].edited == False and windows[0].current_plist == None:
+        if current_window == None and len(windows) == 1 and windows[0] == self.start_window and windows[0].edited == False and windows[0].current_plist == None:
             # Fresh window - replace the contents
             current_window = windows[0]
         # Verify that no other window has that file selected already
@@ -852,12 +1047,10 @@ class ProperTree:
                 window.bell()
                 mb.showerror("File Already Open", "{} is already open here.".format(path)) # , parent=window)
                 return
-        return self.open_plist_with_path(event,path,current_window)
+        return self.open_plist_with_path(None,path,current_window)
 
-    def open_plist_with_path(self, event = None, path = None, current_window = None, plist_type = "XML"):
-        if path == None:
-            # Uh... wut?
-            return
+    def open_plist_with_path(self, event = None, path = None, current_window = None):
+        if not path: return # Uh... wut?
         path = os.path.realpath(os.path.expanduser(path))
         # Let's try to load the plist
         try:
@@ -876,8 +1069,11 @@ class ProperTree:
         # Ensure our default data type is reflected
         current_window.data_type_string.set(self.data_type_string.get())
         current_window.int_type_string.set(self.int_type_string.get())
+        current_window.bool_type_string.set(self.bool_type_string.get())
         current_window.open_plist(path,plist_data,plist_type,self.settings.get("expand_all_items_on_open",True))
         self.lift_window(current_window)
+        # Add it to our Open Recent list
+        self.add_recent(path)
         return current_window
 
     def stackorder(self, root):
@@ -885,7 +1081,7 @@ class ProperTree:
         c = root.children
         s = root.tk.eval('wm stackorder {}'.format(root))
         L = [x.lstrip('.') for x in s.split()]
-        return [(c[x] if x else root) for x in L]
+        return [(c[x] if x else root) for x in L if x in c or not x]
 
     def lift_window(self, window):
         window.lift()

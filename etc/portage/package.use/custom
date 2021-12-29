@@ -7,12 +7,12 @@
 	sys-libs/libblockdev lvm
 app-emulation/libvirt lvm parted
 app-emulation/qemu spice ssh usbredir virgl
-app-emulation/snapd -cgroup-hybrid
+app-containers/snapd -apparmor -cgroup-hybrid
 	sys-fs/squashfs-tools lzma lz4
 #app-emulation/virt-manager
 	net-dns/dnsmasq script
 	net-misc/spice-gtk usbredir
-#app-emulation/wine-staging
+app-emulation/wine-staging ldap netapi
 	media-libs/libsdl2 haptic
 app-misc/mc -slang
 #app-portage/pfl
@@ -24,12 +24,14 @@ dev-lang/python tk
     dev-python/PyQt5 webchannel
     net-libs/zeromq drafts
     dev-python/python-lsp-server all-plugins
-dev-qt/qt-creator autotools cmake cppcheck git modeling python lsp
-dev-util/kdevelop hex
+dev-qt/qtbase:6 test
+dev-qt/qt-creator android autotools beautifier cmake conan cppcheck docker git glsl incredibuild lsp modeling nim perforce python perfprofiler qmlprofiler remotelinux scxml silversearcher webassembly
+dev-util/kdevelop hex reviewboard
 
 kde-apps/kdecore-meta -webengine
 kde-apps/kdenetwork-meta -bittorrent
 
+kde-plasma/plasma-meta discover
 #kde-plasma/plasma-desktop
 	dev-qt/qtmultimedia gstreamer
 	net-dns/avahi mdnsresponder-compat

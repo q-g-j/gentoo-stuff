@@ -6,8 +6,9 @@ app-editors/vscode
 app-emulation/cockpit-machines::cockpit
 	app-emulation/libvirt-dbus::cockpit
 app-emulation/looking-glass
-app-emulation/snapd
-	app-emulation/snapd-glib
+app-emulation/qemu
+app-containers/snapd
+	app-containers/snapd-glib::qgj
 app-emulation/vendor-reset
 app-emulation/virtio-win
 app-emulation/wine-gecko
@@ -31,8 +32,10 @@ dev-python/spyder
 	dev-python/python-lsp-server
 		dev-python/flake8
 			dev-python/pyflakes
-=dev-qt/qt-creator-4*
+dev-qt/*::qt
+dev-qt/qt-creator
 	dev-qt/qtquicktimeline
+dev-util/android*
 
 games-board/pychess
 
@@ -40,12 +43,13 @@ media-sound/carla
 media-sound/scream
 media-video/droidcam
 
+net-dns/mdns-repeater
 net-im/rambox-bin::qgj
 net-im/teams
 net-misc/megasync::4nykey
 	dev-libs/breakpad::4nykey
 	net-misc/meganz-sdk::4nykey
-net-misc/onedrive::dlang
+net-misc/onedrive
 net-misc/wsdd
 net-wireless/rtl88x2bu::qgj
 
