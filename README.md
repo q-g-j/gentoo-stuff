@@ -24,21 +24,21 @@ Table of contents
 Gentoo related:
 ===============
 - *Kernel:* sys-kernel/gentoo-sources:5.15.5
-- `eselect profile show` :<br/>
+- `eselect profile show` :
 *default/linux/amd64/17.1/desktop/plasma/systemd*
 - portage configs available in my repo: [*/etc/portage*](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/portage)
-- enabled layman repos:<br/>
-*4nykey*<br/>
-*audio-overlay*<br/>
-[*cockpit*](https://github.com/orumin/cockpit-overlay.git)<br/>
-*dlang*<br/>
-*guru*<br/>
-*holgersson-overlay*<br/>
-[*qgj*](https://github.com/q-g-j/qgj-overlay)<br/>
-*qt*<br/>
+- enabled layman repos:
+*4nykey*
+*audio-overlay*
+[*cockpit*](https://github.com/orumin/cockpit-overlay.git)
+*dlang*
+*guru*
+*holgersson-overlay*
+[*qgj*](https://github.com/q-g-j/qgj-overlay)
+*qt*
 *snapd*
 
-The [*cockpit*](https://github.com/orumin/cockpit-overlay.git) overlay and my overlay ([*qgj*](https://github.com/q-g-j/qgj-overlay)) need to be added manually:<br/>
+The [*cockpit*](https://github.com/orumin/cockpit-overlay.git) overlay and my overlay ([*qgj*](https://github.com/q-g-j/qgj-overlay)) need to be added manually:
 ```
 sudo layman -o https://raw.githubusercontent.com/q-g-j/gentoo-stuff/master/etc/layman/overlays/cockpit.xml -f -a cockpit
 sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xml -f -a qgj
@@ -46,19 +46,19 @@ sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xm
 
 General information about my VMs:
 =================================
-- host machine:<br/>
-*Mainboard:* MSI X470 Gaming Plus Max<br/>
-*CPU:* AMD Ryzen 5 3600XT (6 cores / 12 threads in total)<br/>
-*Boot GPU:* MSI Radeon RX 570 Gaming X 4GB (for the VM)<br/>
-*2nd GPU:* AMD Radeon R5 230 (for the host)<br/>
-*libvirt*: v7.7.0<br/>
-*QEMU*: v6.0.0<br/>
+- host machine:
+*Mainboard:* MSI X470 Gaming Plus Max
+*CPU:* AMD Ryzen 5 3600XT (6 cores / 12 threads in total)
+*Boot GPU:* MSI Radeon RX 570 Gaming X 4GB (for the VM)
+*2nd GPU:* AMD Radeon R5 230 (for the host)
+*libvirt*: v7.7.0
+*QEMU*: v6.0.0
 - my current libvirt guest XMLs for Win11 and macOS: [link](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
 - ~~using 5 cores / 10 threads for the guests, leaving 1 core / 2 threads for "emulatorpin" and "iothreadpin"~~
 - now passing all cores, dropped emulatorpin and iothreads
 - passing through the onboard USB 3 controller
 - fixed the L3 cache in my VMs - see [below](https://github.com/q-g-j/gentoo-stuff#l3-cache-fix)
-- enabled avic in the *kvm_amd* kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters)<br/>
+- enabled avic in the *kvm_amd* kernel module ([see here](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/modprobe.d) for the other module parameters)
 Note: according to [this site](https://www.reddit.com/r/VFIO/comments/pn3etv/maxim_levitskys_latest_work_on_apicvavic_allows/) the new kernel 5.15 has some improvements to the AVIC code.
 Disabling hyper-v enlightenments like vapic, stimer and synic should not be necessary anymore.
 - using a custom libvirt [hook script](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/hooks/qemu) with the following features:<br/>
@@ -240,9 +240,9 @@ At the bottom of the script add *"wlan_bridge start"* and *"wlan_bridge stop"* i
 
 
 For **multicast-DNS** to work, edit [*/etc/avahi/avahi-daemon.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/avahi/avahi-daemon.conf) and uncomment and change the following lines:<br/>
-`enable-reflector=yes`<br/>
+`enable-reflector=yes`
 `allow-interfaces=wlan0,wlanbridge`<br/>
-Then restart the avahi-daemon service:<br/>
+Then restart the avahi-daemon service:
 `sudo systemctl restart avahi-daemon`<br/>
 You can test multicast-DNS / Bonjour with this tool: [zeroconfServiceBrowser](https://www.tobias-erichsen.de/software/zeroconfservicebrowser.html).<br/>
 
@@ -300,9 +300,9 @@ Applied an [acpi table patch](https://github.com/q-g-j/gentoo-stuff/blob/master/
 This made it possible for me to play the game *Red Dead Redemption 2* inside my guest without it crashing immediately.<br/>
 Could be useful for hiding QEMU from other games as well, but only needed this for RDR2 so far.<br/><br/>
 You can use generic names for the smbios labels or get them from your own system with:<br/>
-`sudo dmidecode --type 2`<br/>
-`sudo dmidecode --type 4`<br/>
-`sudo dmidecode --type 17`<br/><br/>
+`sudo dmidecode --type 2`
+`sudo dmidecode --type 4`
+`sudo dmidecode --type 17`<br/>
 Note: *"sys-apps/dmidecode"* has to be installed if using the following changes to the xml! On Gentoo it was pulled in as a dependency of *"libvirt"*, on Arch I had to manually install it.
 Here are the necessary changes to the [libvirt xml:](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml):
 ```
@@ -344,11 +344,11 @@ Notes on the macOS VM:
 - When the installation starts you need to go to disk utility first and **erase** the System partition, even if empty. This automatically reformats it to be used for the installation. Close the disk utility and start the installation.
 - Downloaded homebrew and installed wget, xquartz (xorg for MacOS) and wine-staging :<br/>
 In mac OS open a terminal:<br/>
-`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`<br/>
-`brew install wget`<br/>
-`brew install --cask xquartz`<br/>
-`brew tap homebrew/cask-versions`<br/>
-`brew install --cask --no-quarantine wine-staging`<br/>
+`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+`brew install wget`
+`brew install --cask xquartz`
+`brew tap homebrew/cask-versions`
+`brew install --cask --no-quarantine wine-staging`
 A reboot is required.
 - Removed BaseImage.img in libvirt xml before restarting the vm.
 - enabled host-passthrough support for my Ryzen CPU. Needed the patches from this [site](https://github.com/AMD-OSX/AMD_Vanilla). You can use my already patched config.plist or OpenCore image: See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore).<br/>
