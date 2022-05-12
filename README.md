@@ -279,14 +279,14 @@ Change `OVMF_CODE.fd` to `OVMF_CODE.secboot.fd`, install *app-crypt/swtpm* and a
 Cinebench R20:
 --------------
 
-### Baremetal:
+### Native Windows 11:
 
 ```
 Multi CPU:    3650 pts.
 Single CPU:    516 pts.
 ```
 
-### Win11 VM:
+### Windows 11 VM:
 
 ```
 Multi CPU:    3470 pts. (95,1 %)
