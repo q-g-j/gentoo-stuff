@@ -224,7 +224,7 @@ What it does, is:
 2. starting *"dnsmasq"* which acts as a DNS server and a DHCP server with a changeable IP range
 3. creating a new policy routing rule via "ip rule add" and adding all possible IPs from the DHCP IP range to it
 4. routing all these IPs through the dnsmasq server. You can print the rules with:<br/>`ip rule | grep --color=never 99; echo; echo Table 99:; ip route show table 99`
-5. finally starting "parprouted". This program "joins" the involved interfaces (wlan0 and wlanbridge) to one address space (the hosts subnet)
+5. finally starting "parprouted". This program automatically creates the necessary routes and updates the ARP table, so that the wireless adapter can find the  interfaces which are assigned to the bridge. This also allows the bridge and the WiFi adapter to share the same subnet.
 
 ### *Requirements:*
 - `net.ipv4.ip_forward = 1` in */etc/sysctl.conf*
