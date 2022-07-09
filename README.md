@@ -27,15 +27,15 @@ Gentoo related:
 - `eselect profile show` :
 *default/linux/amd64/17.1/desktop/plasma/systemd*
 - portage configs available in my repo: [*/etc/portage*](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/portage)
-- enabled layman repos:
-*4nykey*
-*audio-overlay*
-[*cockpit*](https://github.com/orumin/cockpit-overlay.git)
-*dlang*
-*guru*
-*holgersson-overlay*
-[*qgj*](https://github.com/q-g-j/qgj-overlay)
-*qt*
+- enabled layman repos:<br/>
+*4nykey*<br/>
+*audio-overlay*<br/>
+[*cockpit*](https://github.com/orumin/cockpit-overlay.git)<br/>
+*dlang*<br/>
+*guru*<br/>
+*holgersson-overlay*<br/>
+[*qgj*](https://github.com/q-g-j/qgj-overlay)<br/>
+*qt*<br/>
 *snapd*
 
 The [*cockpit*](https://github.com/orumin/cockpit-overlay.git) overlay and my overlay ([*qgj*](https://github.com/q-g-j/qgj-overlay)) need to be added manually:
@@ -240,10 +240,10 @@ At the bottom of the script add *"wlan_bridge start"* and *"wlan_bridge stop"* i
 
 
 For **multicast-DNS** to work, edit [*/etc/avahi/avahi-daemon.conf*](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/avahi/avahi-daemon.conf) and uncomment and change the following lines:<br/>
-`enable-reflector=yes`
-`allow-interfaces=wlan0,wlanbridge`<br/>
-Then restart the avahi-daemon service:
-`sudo systemctl restart avahi-daemon`<br/>
+`enable-reflector=yes`<br/>
+`allow-interfaces=wlan0,wlanbridge`<br/><br/>
+Then restart the avahi-daemon service:<br/>
+`sudo systemctl restart avahi-daemon`<br/><br/>
 You can test multicast-DNS / Bonjour with this tool: [zeroconfServiceBrowser](https://www.tobias-erichsen.de/software/zeroconfservicebrowser.html).<br/>
 
 For proper **LAN hostname detection** in Windows Explorer I installed *net-misc/wsdd* (from *guru* overlay) - activate with:<br/>
@@ -300,9 +300,9 @@ Applied an [acpi table patch](https://github.com/q-g-j/gentoo-stuff/blob/master/
 This made it possible for me to play the game *Red Dead Redemption 2* inside my guest without it crashing immediately.<br/>
 Could be useful for hiding QEMU from other games as well, but only needed this for RDR2 so far.<br/><br/>
 You can use generic names for the smbios labels or get them from your own system with:<br/>
-`sudo dmidecode --type 2`
-`sudo dmidecode --type 4`
-`sudo dmidecode --type 17`<br/>
+`sudo dmidecode --type 2`<br/>
+`sudo dmidecode --type 4`<br/>
+`sudo dmidecode --type 17`<br/><br/>
 Note: *"sys-apps/dmidecode"* has to be installed if using the following changes to the xml! On Gentoo it was pulled in as a dependency of *"libvirt"*, on Arch I had to manually install it.
 Here are the necessary changes to the [libvirt xml:](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/libvirt/qemu/win11.xml):
 ```
@@ -330,7 +330,8 @@ Scream audio via ALSA:
 I chose to run scream audio in network mode so no 2nd IVSHMEM device is needed.<br/>
 To not rely on a running pulseaudio session, scream uses ALSA in my system. To have no ALSA program block the sound card, I created `/etc/asound.conf` and made the [dmix](https://alsa.opensrc.org/Dmix) and [dsnoop](https://alsa.opensrc.org/Dsnoop) plugins from ALSA the default devices for output and input and use these explicitly for pipewire (and its pulseaudio implementation).<br/>
 - */etc/asound.conf*: look [here](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/asound.conf) for an example<br/>
-- */etc/pipewire/pipewire.conf*: look near the bottom of [this file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/pipewire/pipewire.conf) inside the `context.objects = [ ... ]` section. There, inside `{   factory = adapter ... }`, you can specify, which alsa devices pipewire should use (one adapter for output, one for input).
+- */etc/pipewire/pipewire.conf*: look near the bottom of [this file](https://github.com/q-g-j/gentoo-stuff/blob/master/etc/pipewire/pipewire.conf) inside the `context.objects = [ ... ]` section.<br/>
+There, inside `{   factory = adapter ... }`, you can specify, which alsa devices pipewire should use (one adapter for output, one for input).
 
 Notes on the macOS VM:
 ======================
@@ -344,11 +345,11 @@ Notes on the macOS VM:
 - When the installation starts you need to go to disk utility first and **erase** the System partition, even if empty. This automatically reformats it to be used for the installation. Close the disk utility and start the installation.
 - Downloaded homebrew and installed wget, xquartz (xorg for MacOS) and wine-staging :<br/>
 In mac OS open a terminal:<br/>
-`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
-`brew install wget`
-`brew install --cask xquartz`
-`brew tap homebrew/cask-versions`
-`brew install --cask --no-quarantine wine-staging`
+`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`<br/>
+`brew install wget`<br/>
+`brew install --cask xquartz`<br/>
+`brew tap homebrew/cask-versions`<br/>
+`brew install --cask --no-quarantine wine-staging`<br/>
 A reboot is required.
 - Removed BaseImage.img in libvirt xml before restarting the vm.
 - enabled host-passthrough support for my Ryzen CPU. Needed the patches from this [site](https://github.com/AMD-OSX/AMD_Vanilla). You can use my already patched config.plist or OpenCore image: See [here](https://github.com/q-g-j/gentoo-stuff/tree/master/macOS/OpenCore).<br/>
