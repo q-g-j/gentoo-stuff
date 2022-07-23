@@ -46,12 +46,12 @@ sudo layman -o https://raw.githubusercontent.com/q-g-j/qgj-overlay/master/qgj.xm
 
 General information about my VMs:
 =================================
-- host machine:
-*Mainboard:* MSI X470 Gaming Plus Max
-*CPU:* AMD Ryzen 5 3600XT (6 cores / 12 threads in total)
-*Boot GPU:* MSI Radeon RX 570 Gaming X 4GB (for the VM)
-*2nd GPU:* AMD Radeon R5 230 (for the host)
-*libvirt*: v7.7.0
+- host machine:<br/>
+*Mainboard:* MSI X470 Gaming Plus Max<br/>
+*CPU:* AMD Ryzen 5 3600XT (6 cores / 12 threads in total)<br/>
+*Boot GPU:* MSI Radeon RX 570 Gaming X 4GB (for the VM)<br/>
+*2nd GPU:* AMD Radeon R5 230 (for the host)<br/>
+*libvirt*: v7.7.0<br/>
 *QEMU*: v6.0.0
 - my current libvirt guest XMLs for Win11 and macOS: [link](https://github.com/q-g-j/gentoo-stuff/tree/master/etc/libvirt/qemu)
 - ~~using 5 cores / 10 threads for the guests, leaving 1 core / 2 threads for "emulatorpin" and "iothreadpin"~~
